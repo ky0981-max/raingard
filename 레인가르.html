@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>레인가르 기사단</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0f0f1a; color: #e0e0ff; min-height: 100vh; padding: 24px 16px; }
+  h1 { text-align: center; font-size: 1.6rem; color: #a78bfa; letter-spacing: 2px; margin-bottom: 4px; }
+  .subtitle { text-align: center; font-size: 0.85rem; color: #6b7280; margin-bottom: 24px; }
+  .card { background: #1a1a2e; border: 1px solid #2d2d4e; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+  .input-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+  .input-group { display: flex; flex-direction: column; gap: 4px; }
+  .input-group label { font-size: 0.75rem; color: #9ca3af; }
+  .input-group input { background: #0f0f1a; border: 1px solid #3d3d6e; border-radius: 8px; color: #e0e0ff; padding: 8px 12px; font-size: 0.95rem; width: 100%; outline: none; transition: border-color 0.2s; }
+  .input-group input:focus { border-color: #7c3aed; }
+  .input-group.id-group { flex: 2; min-width: 120px; }
+  .input-group.num-group { flex: 1; min-width: 60px; }
+  .btn { padding: 8px 18px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s; }
+  .btn-add { background: #7c3aed; color: #fff; align-self: flex-end; height: 36px; }
+  .btn-add:hover { background: #6d28d9; }
+  .btn-add:disabled { background: #4b5563; cursor: not-allowed; }
+  .btn-del { background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 4px 10px; font-size: 0.8rem; border-radius: 6px; cursor: pointer; }
+  .btn-del:hover { background: #ef444422; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th { color: #a78bfa; font-weight: 600; padding: 10px 8px; border-bottom: 1px solid #2d2d4e; text-align: center; }
+  th:first-child { text-align: left; }
+  td { padding: 10px 8px; border-bottom: 1px solid #1e1e36; text-align: center; vertical-align: middle; }
+  td:first-child { text-align: left; font-weight: 600; color: #c4b5fd; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #ffffff08; }
+  .rate-bar { position: relative; background: #1e1e36; border-radius: 4px; height: 6px; width: 80px; margin: 0 auto; margin-top: 4px; }
+  .rate-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
+  .rate-text { font-size: 1rem; font-weight: 700; }
+  .top1 td:first-child::before { content: '👑 '; }
+  .empty { text-align: center; color: #4b5563; padding: 32px; font-size: 0.9rem; }
+  .total-row td { color: #f9fafb; font-weight: 700; border-top: 1px solid #3d3d6e; background: #ffffff05; }
+  .formula { font-size: 0.75rem; color: #6b7280; text-align: center; margin-top: 16px; }
+  .status { text-align: center; font-size: 0.8rem; color: #6b7280; margin-top: 8px; min-height: 20px; }
+  .status.ok { color: #34d399; }
+  .status.err { color: #f87171; }
+</style>
+</head>
+<body>
+<h1>⚔️ 레인가르 기사단</h1>
+<div class="subtitle">승률 = (승 + 무×0.5) ÷ 총 경기수</div>
+
+<div class="card">
+  <div class="input-row">
+    <div class="input-group id-group">
+      <label>단원 아이디</label>
+      <input type="text" id="inp-id" placeholder="아이디 입력" />
+    </div>
+    <div class="input-group num-group">
+      <label>승</label>
+      <input type="number" id="inp-w" min="0" value="0" />
+    </div>
+    <div class="input-group num-group">
+      <label>무</label>
+      <input type="number" id="inp-d" min="0" value="0" />
+    </div>
+    <div class="input-group num-group">
+      <label>패</label>
+      <input type="number" id="inp-l" min="0" value="0" />
+    </div>
+    <button class="btn btn-add" id="btn-add" onclick="addMember()">+ 추가</button>
+  </div>
+  <div class="status" id="status"></div>
+</div>
+
+<div class="card">
+  <div id="tbl-wrap"><div class="empty">불러오는 중...</div></div>
+</div>
+<div class="formula">※ 무승부는 0.5승으로 계산 | 누구나 입력 가능</div>
+
+<script>
+const API_KEY = '$2a$10$pY1/DGmmZ7XGu7gsjExkQ.1nx5e.VKGhWSnfrlL/WvWwDB/8la5mW';
+const BIN_URL = 'https://api.jsonbin.io/v3/b';
+let BIN_ID = localStorage.getItem('raingard_bin_id') || '';
+let members = [];
+
+async function initBin() {
+  if (BIN_ID) return true;
+  const res = await fetch(BIN_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY, 'X-Bin-Name': 'raingard' },
+    body: JSON.stringify({ list: [] })
+  });
+  const data = await res.json();
+  BIN_ID = data.metadata.id;
+  localStorage.setItem('raingard_bin_id', BIN_ID);
+  return true;
+}
+
+async function load() {
+  if (!BIN_ID) { await initBin(); }
+  const res = await fetch(BIN_URL + '/' + BIN_ID + '/latest', {
+    headers: { 'X-Master-Key': API_KEY }
+  });
+  const data = await res.json();
+  members = (data.record && data.record.list) || [];
+  render();
+}
+
+async function save() {
+  await fetch(BIN_URL + '/' + BIN_ID, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+    body: JSON.stringify({ list: members })
+  });
+}
+
+function calcRate(w, d, l) {
+  const t = w + d + l;
+  return t === 0 ? 0 : (w + d * 0.5) / t;
+}
+
+function rateColor(r) {
+  if (r >= 0.7) return '#34d399';
+  if (r >= 0.5) return '#a78bfa';
+  if (r >= 0.3) return '#fbbf24';
+  return '#f87171';
+}
+
+function render() {
+  const wrap = document.getElementById('tbl-wrap');
+  if (!members.length) { wrap.innerHTML = '<div class="empty">단원을 추가해주세요</div>'; return; }
+
+  const sorted = [...members].map((m,i)=>({...m,origIdx:i,rate:calcRate(m.w,m.d,m.l)})).sort((a,b)=>b.rate-a.rate);
+  let tW=0,tD=0,tL=0;
+  members.forEach(m=>{tW+=m.w;tD+=m.d;tL+=m.l;});
+
+  const rows = sorted.map((m,rank)=>{
+    const t=m.w+m.d+m.l, pct=(m.rate*100).toFixed(1), bw=Math.round(m.rate*100), col=rateColor(m.rate);
+    return '<tr class="'+(rank===0&&t>0?'top1':'')+'">'
+      +'<td>'+m.id+'</td><td>'+m.w+'</td><td>'+m.d+'</td><td>'+m.l+'</td><td>'+t+'</td>'
+      +'<td><span class="rate-text" style="color:'+col+'">'+pct+'%</span>'
+      +'<div class="rate-bar"><div class="rate-fill" style="width:'+bw+'%;background:'+col+'"></div></div></td>'
+      +'<td><button class="btn btn-del" onclick="deleteMember('+m.origIdx+')">삭제</button></td></tr>';
+  }).join('');
+
+  const tAll=tW+tD+tL, tRate=calcRate(tW,tD,tL), tc=rateColor(tRate);
+  wrap.innerHTML='<table><thead><tr><th>단원 아이디</th><th>승</th><th>무</th><th>패</th><th>총경기</th><th>승률</th><th></th></tr></thead><tbody>'
+    +rows+'<tr class="total-row"><td>📊 합계</td><td>'+tW+'</td><td>'+tD+'</td><td>'+tL+'</td><td>'+tAll+'</td>'
+    +'<td><span class="rate-text" style="color:'+tc+'">'+(tRate*100).toFixed(1)+'%</span></td><td></td></tr></tbody></table>';
+}
+
+function setStatus(msg, type) {
+  const el=document.getElementById('status');
+  el.textContent=msg; el.className='status '+(type||'');
+  if(type==='ok') setTimeout(()=>{el.textContent='';el.className='status';},2000);
+}
+
+async function addMember() {
+  const id=document.getElementById('inp-id').value.trim();
+  const w=parseInt(document.getElementById('inp-w').value)||0;
+  const d=parseInt(document.getElementById('inp-d').value)||0;
+  const l=parseInt(document.getElementById('inp-l').value)||0;
+  if(!id){setStatus('아이디를 입력해주세요','err');return;}
+  const btn=document.getElementById('btn-add');
+  btn.disabled=true; setStatus('저장 중...');
+  members.push({id,w,d,l});
+  try {
+    await save(); render();
+    document.getElementById('inp-id').value='';
+    document.getElementById('inp-w').value=0;
+    document.getElementById('inp-d').value=0;
+    document.getElementById('inp-l').value=0;
+    document.getElementById('inp-id').focus();
+    setStatus('추가됐어요!','ok');
+  } catch(e) { members.pop(); setStatus('저장 실패','err'); }
+  btn.disabled=false;
+}
+
+async function deleteMember(idx) {
+  members.splice(idx,1);
+  try { await save(); render(); setStatus('삭제됐어요','ok'); }
+  catch(e) { setStatus('삭제 실패','err'); }
+}
+
+document.addEventListener('keydown',e=>{ if(e.key==='Enter') addMember(); });
+load();
+</script>
+</body>
+</html>
