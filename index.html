@@ -3,44 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>레인가르 기사단</title>
+<title>레인가르 기사단 전투기록</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', sans-serif; background: #0f0f1a; color: #e0e0ff; min-height: 100vh; padding: 24px 16px; }
-  h1 { text-align: center; font-size: 1.6rem; color: #a78bfa; letter-spacing: 2px; margin-bottom: 4px; }
-  .subtitle { text-align: center; font-size: 0.85rem; color: #6b7280; margin-bottom: 24px; }
-  .card { background: #1a1a2e; border: 1px solid #2d2d4e; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-  .input-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
-  .input-group { display: flex; flex-direction: column; gap: 4px; }
-  .input-group label { font-size: 0.75rem; color: #9ca3af; }
-  .input-group input { background: #0f0f1a; border: 1px solid #3d3d6e; border-radius: 8px; color: #e0e0ff; padding: 8px 12px; font-size: 0.95rem; width: 100%; outline: none; transition: border-color 0.2s; }
-  .input-group input:focus { border-color: #7c3aed; }
-  .input-group.id-group { flex: 2; min-width: 120px; }
-  .input-group.num-group { flex: 1; min-width: 60px; }
-  .btn { padding: 8px 18px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s; }
-  .btn-add { background: #7c3aed; color: #fff; align-self: flex-end; height: 36px; }
-  .btn-add:hover { background: #6d28d9; }
-  .btn-add:disabled { background: #4b5563; cursor: not-allowed; }
-  .btn-del { background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 4px 10px; font-size: 0.8rem; border-radius: 6px; cursor: pointer; }
-  .btn-del:hover { background: #ef444422; }
-  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-  th { color: #a78bfa; font-weight: 600; padding: 10px 8px; border-bottom: 1px solid #2d2d4e; text-align: center; }
-  th:first-child { text-align: left; }
-  td { padding: 10px 8px; border-bottom: 1px solid #1e1e36; text-align: center; vertical-align: middle; }
-  td:first-child { text-align: left; font-weight: 600; color: #c4b5fd; }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: #ffffff08; }
-  .rate-bar { position: relative; background: #1e1e36; border-radius: 4px; height: 6px; width: 80px; margin: 0 auto; margin-top: 4px; }
-  .rate-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
-  .rate-text { font-size: 1rem; font-weight: 700; }
-  .top1 td:first-child::before { content: '👑 '; }
-  .empty { text-align: center; color: #4b5563; padding: 32px; font-size: 0.9rem; }
-  .total-row td { color: #f9fafb; font-weight: 700; border-top: 1px solid #3d3d6e; background: #ffffff05; }
-  .formula { font-size: 0.75rem; color: #6b7280; text-align: center; margin-top: 16px; }
-  .status { text-align: center; font-size: 0.8rem; color: #6b7280; margin-top: 8px; min-height: 20px; }
-  .status.ok { color: #34d399; }
-  .status.err { color: #f87171; }
-  /* 비밀번호 잠금 */
+  body { font-family: 'Segoe UI', sans-serif; background: #0f0f1a; color: #e0e0ff; min-height: 100vh; padding: 20px 12px; }
+  h1 { text-align: center; font-size: 1.5rem; color: #a78bfa; letter-spacing: 2px; margin-bottom: 4px; }
+  .subtitle { text-align: center; font-size: 0.8rem; color: #6b7280; margin-bottom: 20px; }
+  .auth-badge { text-align: center; font-size: 0.75rem; margin-bottom: 10px; }
+
+  /* 잠금 */
   #lock-screen { position: fixed; inset: 0; background: #0f0f1a; display: flex; align-items: center; justify-content: center; z-index: 999; }
   .lock-box { background: #1a1a2e; border: 1px solid #2d2d4e; border-radius: 16px; padding: 32px; text-align: center; width: 300px; }
   .lock-box h2 { color: #a78bfa; margin-bottom: 8px; }
@@ -48,14 +19,73 @@
   .lock-box input { width: 100%; background: #0f0f1a; border: 1px solid #3d3d6e; border-radius: 8px; color: #e0e0ff; padding: 10px 14px; font-size: 1.1rem; letter-spacing: 4px; outline: none; text-align: center; margin-bottom: 12px; }
   .lock-box input:focus { border-color: #7c3aed; }
   .btn-unlock { width: 100%; background: #7c3aed; color: #fff; border: none; border-radius: 8px; padding: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; }
-  .btn-unlock:hover { background: #6d28d9; }
   .lock-err { color: #ef4444; font-size: 0.85rem; margin-top: 8px; min-height: 20px; }
-  .auth-badge { text-align: center; font-size: 0.75rem; color: #34d399; margin-bottom: 8px; }
+
+  /* 입력 카드 */
+  .card { background: #1a1a2e; border: 1px solid #2d2d4e; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .card h3 { color: #a78bfa; font-size: 0.95rem; margin-bottom: 12px; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
+  .form-grid.wide { grid-template-columns: 2fr repeat(4, 1fr) repeat(4, 1fr); }
+  .fg { display: flex; flex-direction: column; gap: 3px; }
+  .fg label { font-size: 0.7rem; color: #9ca3af; }
+  .fg input { background: #0f0f1a; border: 1px solid #3d3d6e; border-radius: 6px; color: #e0e0ff; padding: 6px 8px; font-size: 0.88rem; outline: none; width: 100%; }
+  .fg input:focus { border-color: #7c3aed; }
+  .section-label { font-size: 0.7rem; color: #f59e0b; font-weight: 700; margin-bottom: 4px; }
+  .form-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; margin-top: 8px; }
+  .form-section { flex: 1; min-width: 200px; }
+  .btn-add { background: #7c3aed; color: #fff; border: none; border-radius: 8px; padding: 8px 20px; font-size: 0.9rem; font-weight: 600; cursor: pointer; height: 34px; align-self: flex-end; white-space: nowrap; }
+  .btn-add:hover { background: #6d28d9; }
+  .btn-add:disabled { background: #4b5563; cursor: not-allowed; }
+  .status { font-size: 0.8rem; margin-top: 6px; min-height: 18px; }
+  .status.ok { color: #34d399; }
+  .status.err { color: #ef4444; }
+
+  /* 테이블 */
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 900px; }
+  th { padding: 8px 6px; border-bottom: 2px solid #2d2d4e; text-align: center; white-space: nowrap; font-size: 0.78rem; cursor: pointer; user-select: none; }
+  th:first-child { text-align: left; }
+  th:hover { color: #c4b5fd; }
+  th.sort-asc::after { content: ' ▲'; font-size: 0.65rem; }
+  th.sort-desc::after { content: ' ▼'; font-size: 0.65rem; }
+  td { padding: 8px 6px; border-bottom: 1px solid #1e1e36; text-align: center; vertical-align: middle; white-space: nowrap; }
+  td:first-child { text-align: left; font-weight: 600; color: #c4b5fd; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #ffffff08; }
+  .th-atk { background: #2d1b4e; color: #f59e0b; }
+  .th-def { background: #1b2d4e; color: #38bdf8; }
+  .th-etc { background: #1a1a2e; color: #9ca3af; }
+  .rate-bar { background: #1e1e36; border-radius: 3px; height: 4px; width: 60px; margin: 0 auto; margin-top: 3px; }
+  .rate-fill { height: 100%; border-radius: 3px; }
+  .rank-badge { display: inline-block; font-weight: 700; font-size: 0.85rem; }
+  .rank-1 { color: #fbbf24; }
+  .rank-2 { color: #9ca3af; }
+  .rank-3 { color: #f97316; }
+  .total-row td { font-weight: 700; border-top: 2px solid #3d3d6e; background: #ffffff05; color: #f9fafb; }
+  .empty { text-align: center; color: #4b5563; padding: 32px; }
+  .btn-sm { border: none; border-radius: 6px; padding: 3px 8px; font-size: 0.75rem; cursor: pointer; margin-left: 2px; }
+  .btn-edit { background: #7c3aed33; color: #a78bfa; border: 1px solid #a78bfa44; }
+  .btn-del { background: #ef444422; color: #ef4444; border: 1px solid #ef444444; }
+  .tag-수호탑 { background: #065f4622; color: #34d399; border: 1px solid #34d39944; border-radius: 4px; padding: 1px 5px; font-size: 0.72rem; }
+  .tag-성재 { background: #78350f22; color: #fbbf24; border: 1px solid #fbbf2444; border-radius: 4px; padding: 1px 5px; font-size: 0.72rem; }
+  input.note-tag { width: 80px; }
+
+  /* 수정 모달 */
+  #edit-modal { display: none; position: fixed; inset: 0; background: #00000099; align-items: center; justify-content: center; z-index: 888; }
+  #edit-modal.show { display: flex; }
+  .edit-box { background: #1a1a2e; border: 1px solid #2d2d4e; border-radius: 16px; padding: 24px; width: 520px; max-width: 96vw; max-height: 90vh; overflow-y: auto; }
+  .edit-box h3 { color: #a78bfa; margin-bottom: 16px; }
+  .edit-section { margin-bottom: 12px; }
+  .edit-section .section-label { margin-bottom: 6px; }
+  .edit-grid { display: grid; grid-template-columns: 2fr repeat(4, 1fr); gap: 6px; }
+  .edit-grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .edit-btns { display: flex; gap: 8px; margin-top: 16px; }
+  .btn-save { flex: 1; background: #7c3aed; color: #fff; border: none; border-radius: 8px; padding: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; }
+  .btn-cancel { flex: 1; background: transparent; color: #9ca3af; border: 1px solid #3d3d6e; border-radius: 8px; padding: 10px; font-size: 0.95rem; cursor: pointer; }
 </style>
 </head>
 <body>
 
-<!-- 비밀번호 잠금 화면 -->
 <div id="lock-screen">
   <div class="lock-box">
     <h2>⚔️ 레인가르 기사단</h2>
@@ -69,45 +99,101 @@
   </div>
 </div>
 
-<h1>⚔️ 레인가르 기사단</h1>
-<div class="subtitle">승률 = (승 + 무×0.5) ÷ 총 경기수</div>
+<div id="edit-modal">
+  <div class="edit-box">
+    <h3>✏️ 단원 수정</h3>
+    <input type="hidden" id="edit-idx" />
+    <div class="edit-section">
+      <div class="fg" style="margin-bottom:10px;">
+        <label>닉네임</label>
+        <input type="text" id="edit-name" />
+      </div>
+    </div>
+    <div class="edit-section">
+      <div class="section-label" style="color:#f59e0b;">⚔️ 공격</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">
+        <div class="fg"><label style="color:#f59e0b;">판수</label><input type="number" id="edit-ap" min="0" /></div>
+        <div class="fg"><label style="color:#f59e0b;">승</label><input type="number" id="edit-aw" min="0" /></div>
+        <div class="fg"><label style="color:#f59e0b;">무</label><input type="number" id="edit-ad" min="0" /></div>
+        <div class="fg"><label style="color:#f59e0b;">패</label><input type="number" id="edit-al" min="0" /></div>
+        <div class="fg"><label style="color:#9ca3af;">팅/미참</label><input type="number" id="edit-at" min="0" /></div>
+      </div>
+    </div>
+    <div class="edit-section" style="margin-top:10px;">
+      <div class="section-label" style="color:#38bdf8;">🛡️ 방어</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+        <div class="fg"><label style="color:#38bdf8;">판수</label><input type="number" id="edit-dp" min="0" /></div>
+        <div class="fg"><label style="color:#38bdf8;">승</label><input type="number" id="edit-dw" min="0" /></div>
+        <div class="fg"><label style="color:#38bdf8;">무</label><input type="number" id="edit-dd" min="0" /></div>
+        <div class="fg"><label style="color:#38bdf8;">패</label><input type="number" id="edit-dl" min="0" /></div>
+      </div>
+    </div>
+    <div class="fg" style="margin-top:10px;">
+      <label>비고</label>
+      <input type="text" id="edit-note" placeholder="수호탑, 성재 등" />
+    </div>
+    <div class="edit-btns">
+      <button class="btn-cancel" onclick="closeEdit()">취소</button>
+      <button class="btn-save" onclick="saveEdit()">저장</button>
+    </div>
+  </div>
+</div>
+
+<h1>⚔️ 레인가르 기사단 전투기록</h1>
+<div class="subtitle">승률 = (승 + 무×0.5) ÷ 총경기수 | 1판 = 3경기</div>
 <div class="auth-badge" id="auth-badge"></div>
 
 <div class="card" id="input-card" style="display:none;">
-  <div class="input-row">
-    <div class="input-group id-group">
-      <label>단원 아이디</label>
-      <input type="text" id="inp-id" placeholder="아이디 입력" />
+  <h3>단원 추가</h3>
+  <div class="form-row">
+    <div class="form-section">
+      <div class="section-label">닉네임</div>
+      <div class="fg"><input type="text" id="inp-name" placeholder="닉네임" /></div>
     </div>
-    <div class="input-group num-group">
-      <label>승</label>
-      <input type="number" id="inp-w" min="0" value="0" />
+    <div class="form-section">
+      <div class="section-label" style="color:#f59e0b;">⚔️ 공격</div>
+      <div style="display:flex;gap:6px;">
+        <div class="fg"><label style="font-size:0.68rem;color:#f59e0b;">판수</label><input type="number" id="inp-ap" min="0" value="0" /></div>
+        <div class="fg"><label style="font-size:0.68rem;color:#f59e0b;">승</label><input type="number" id="inp-aw" min="0" value="0" /></div>
+        <div class="fg"><label style="font-size:0.68rem;color:#f59e0b;">무</label><input type="number" id="inp-ad" min="0" value="0" /></div>
+        <div class="fg"><label style="font-size:0.68rem;color:#f59e0b;">패</label><input type="number" id="inp-al" min="0" value="0" /></div>
+        <div class="fg"><label style="font-size:0.68rem;color:#9ca3af;">팅/미참</label><input type="number" id="inp-at" min="0" value="0" /></div>
+      </div>
     </div>
-    <div class="input-group num-group">
-      <label>무</label>
-      <input type="number" id="inp-d" min="0" value="0" />
+    <div class="form-section">
+      <div class="section-label" style="color:#38bdf8;">🛡️ 방어</div>
+      <div style="display:flex;gap:6px;">
+        <div class="fg"><label style="font-size:0.68rem;color:#38bdf8;">판수</label><input type="number" id="inp-dp" min="0" value="0" /></div>
+        <div class="fg"><label style="font-size:0.68rem;color:#38bdf8;">승</label><input type="number" id="inp-dw" min="0" value="0" /></div>
+        <div class="fg"><label style="font-size:0.68rem;color:#38bdf8;">무</label><input type="number" id="inp-dd" min="0" value="0" /></div>
+        <div class="fg"><label style="font-size:0.68rem;color:#38bdf8;">패</label><input type="number" id="inp-dl" min="0" value="0" /></div>
+      </div>
     </div>
-    <div class="input-group num-group">
-      <label>패</label>
-      <input type="number" id="inp-l" min="0" value="0" />
+    <div class="form-section" style="max-width:100px;">
+      <div class="section-label">비고</div>
+      <div class="fg"><input type="text" id="inp-note" placeholder="수호탑 등" class="note-tag" /></div>
     </div>
-    <button class="btn btn-add" id="btn-add" onclick="addMember()">+ 추가</button>
+    <button class="btn-add" id="btn-add" onclick="addMember()">+ 추가</button>
   </div>
   <div class="status" id="status"></div>
 </div>
 
 <div class="card">
-  <div id="tbl-wrap"><div class="empty">불러오는 중...</div></div>
+  <div class="tbl-wrap">
+    <div id="tbl-wrap"><div class="empty">불러오는 중...</div></div>
+  </div>
 </div>
-<div class="formula">※ 무승부는 0.5승으로 계산 | 누구나 열람 가능</div>
 
 <script>
 const API_KEY = '$2a$10$pY1/DGmmZ7XGu7gsjExkQ.1nx5e.VKGhWSnfrlL/WvWwDB/8la5mW';
 const BIN_URL = 'https://api.jsonbin.io/v3/b';
+const BIN_NAME = 'raingard_battle';
 const PASSWORD = '794613';
-let BIN_ID = localStorage.getItem('raingard_bin_id') || '';
+let BIN_ID = localStorage.getItem('raingard_battle_bin_id') || '';
 let members = [];
 let canWrite = false;
+let sortKey = 'atk_rate';
+let sortDir = -1;
 
 function unlock() {
   const val = document.getElementById('pw-input').value;
@@ -115,19 +201,17 @@ function unlock() {
     canWrite = true;
     document.getElementById('lock-screen').style.display = 'none';
     document.getElementById('input-card').style.display = 'block';
-    document.getElementById('auth-badge').textContent = '✅ 작성 권한 있음';
+    document.getElementById('auth-badge').innerHTML = '✅ <span style="color:#34d399">작성 권한 있음</span>';
     load();
   } else {
     document.getElementById('lock-err').textContent = '비밀번호가 틀렸어요';
     document.getElementById('pw-input').value = '';
   }
 }
-
 function viewOnly() {
   canWrite = false;
   document.getElementById('lock-screen').style.display = 'none';
-  document.getElementById('input-card').style.display = 'none';
-  document.getElementById('auth-badge').textContent = '👁️ 보기 전용';
+  document.getElementById('auth-badge').innerHTML = '👁️ <span style="color:#6b7280">보기 전용</span>';
   load();
 }
 
@@ -135,14 +219,13 @@ async function initBin() {
   if (BIN_ID) return;
   const res = await fetch(BIN_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY, 'X-Bin-Name': 'raingard' },
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY, 'X-Bin-Name': BIN_NAME },
     body: JSON.stringify({ list: [] })
   });
   const data = await res.json();
   BIN_ID = data.metadata.id;
-  localStorage.setItem('raingard_bin_id', BIN_ID);
+  localStorage.setItem('raingard_battle_bin_id', BIN_ID);
 }
-
 async function load() {
   if (!BIN_ID) await initBin();
   try {
@@ -150,11 +233,8 @@ async function load() {
     const data = await res.json();
     members = (data.record && data.record.list) || [];
     render();
-  } catch(e) {
-    document.getElementById('tbl-wrap').innerHTML = '<div class="empty">불러오기 실패</div>';
-  }
+  } catch(e) { document.getElementById('tbl-wrap').innerHTML = '<div class="empty">불러오기 실패</div>'; }
 }
-
 async function save() {
   await fetch(BIN_URL + '/' + BIN_ID, {
     method: 'PUT',
@@ -167,38 +247,149 @@ function calcRate(w, d, l) {
   const t = w + d + l;
   return t === 0 ? 0 : (w + d * 0.5) / t;
 }
-
+function fmtRate(r) { return (r * 100).toFixed(1) + '%'; }
 function rateColor(r) {
-  if (r >= 0.7) return '#34d399';
-  if (r >= 0.5) return '#a78bfa';
-  if (r >= 0.3) return '#fbbf24';
+  if (r >= 0.9) return '#34d399';
+  if (r >= 0.7) return '#a78bfa';
+  if (r >= 0.5) return '#fbbf24';
   return '#f87171';
+}
+
+function getVal(m) {
+  const aw = m.aw||0, ad = m.ad||0, al = m.al||0, at = m.at||0;
+  const dw = m.dw||0, dd = m.dd||0, dl = m.dl||0, dt = m.dt||0;
+  const atk_total = aw + ad + al;
+  const def_total = dw + dd + dl;
+  const atk_games = aw + ad + al + at;
+  const def_games = dw + dd + dl + dt;
+  const atk_판 = m.ap || Math.ceil(atk_games / 3);
+  const def_판 = m.dp || Math.ceil(def_games / 3);
+  const atk_rate = calcRate(aw, ad, al);
+  const def_rate = calcRate(dw, dd, dl);
+  return { aw,ad,al,at, dw,dd,dl,dt, atk_total, def_total, atk_games, def_games, atk_판, def_판, atk_rate, def_rate };
+}
+
+function sortedMembers() {
+  return [...members].map((m,i)=>({...m, origIdx:i, ...getVal(m)})).sort((a,b)=>{
+    let va = a[sortKey]??0, vb = b[sortKey]??0;
+    if(typeof va==='string') return sortDir * va.localeCompare(vb,'ko');
+    return sortDir * (va - vb);
+  });
+}
+
+function rankList(arr, key) {
+  const sorted = [...arr].sort((a,b)=>b[key]-a[key]);
+  const rankMap = {};
+  sorted.forEach((m,i)=>{ rankMap[m.origIdx] = i+1; });
+  return rankMap;
+}
+
+function rankBadge(r) {
+  if(r===1) return '<span class="rank-badge rank-1">👑 1</span>';
+  if(r===2) return '<span class="rank-badge rank-2">🥈 2</span>';
+  if(r===3) return '<span class="rank-badge rank-3">🥉 3</span>';
+  return r;
+}
+
+function noteTag(note) {
+  if(!note) return '';
+  if(note.includes('수호탑')) return '<span class="tag-수호탑">수호탑</span>';
+  if(note.includes('성재')) return '<span class="tag-성재">성재</span>';
+  return '<span style="font-size:0.75rem;color:#9ca3af">'+note+'</span>';
 }
 
 function render() {
   const wrap = document.getElementById('tbl-wrap');
   if (!members.length) { wrap.innerHTML = '<div class="empty">단원을 추가해주세요</div>'; return; }
 
-  const sorted = [...members].map((m,i)=>({...m,origIdx:i,rate:calcRate(m.w,m.d,m.l)})).sort((a,b)=>b.rate-a.rate);
-  let tW=0,tD=0,tL=0;
-  members.forEach(m=>{tW+=m.w;tD+=m.d;tL+=m.l;});
+  const sorted = sortedMembers();
+  const atkRank = rankList(sorted, 'atk_rate');
+  const defRank = rankList(sorted, 'def_rate');
 
-  const delBtn = canWrite ? (i) => '<button class="btn btn-del" onclick="deleteMember('+i+')">삭제</button>' : () => '';
+  let tAW=0,tAD=0,tAL=0,tAT=0,tDW=0,tDD=0,tDL=0,tDT=0;
+  sorted.forEach(m=>{tAW+=m.aw||0;tAD+=m.ad||0;tAL+=m.al||0;tAT+=m.at||0;tDW+=m.dw||0;tDD+=m.dd||0;tDL+=m.dl||0;tDT+=m.dt||0;});
+  const tAR=calcRate(tAW,tAD,tAL), tDR=calcRate(tDW,tDD,tDL);
+  const tAP=Math.ceil((tAW+tAD+tAL+tAT)/3), tDP=Math.ceil((tDW+tDD+tDL+tDT)/3);
 
-  const rows = sorted.map((m,rank)=>{
-    const t=m.w+m.d+m.l, pct=(m.rate*100).toFixed(1), bw=Math.round(m.rate*100), col=rateColor(m.rate);
-    return '<tr class="'+(rank===0&&t>0?'top1':'')+'">'
-      +'<td>'+m.id+'</td><td>'+m.w+'</td><td>'+m.d+'</td><td>'+m.l+'</td><td>'+t+'</td>'
-      +'<td><span class="rate-text" style="color:'+col+'">'+pct+'%</span>'
-      +'<div class="rate-bar"><div class="rate-fill" style="width:'+bw+'%;background:'+col+'"></div></div></td>'
-      +'<td>'+delBtn(m.origIdx)+'</td></tr>';
+  const thSort = (key, label, cls) => {
+    const active = sortKey===key;
+    const arrow = active ? (sortDir===-1?' class="sort-desc"':' class="sort-asc"') : '';
+    return '<th'+arrow+' class="'+cls+'" onclick="setSort(\''+key+'\')" style="cursor:pointer">'+label+'</th>';
+  };
+
+  const rows = sorted.map(m => {
+    const ar = m.atk_rate, dr = m.def_rate;
+    const ac = rateColor(ar), dc = rateColor(dr);
+    const actions = canWrite
+      ? '<button class="btn-sm btn-edit" onclick="openEdit('+m.origIdx+')">수정</button><button class="btn-sm btn-del" onclick="delMember('+m.origIdx+')">삭제</button>'
+      : '';
+    return '<tr>'
+      +'<td>'+m.name+'</td>'
+      +'<td class="th-atk">'+m.atk_판+'</td>'
+      +'<td class="th-atk">'+m.aw+'</td>'
+      +'<td class="th-atk">'+m.ad+'</td>'
+      +'<td class="th-atk">'+m.al+'</td>'
+      +'<td class="th-atk" style="color:#9ca3af">'+m.at+'</td>'
+      +'<td class="th-atk"><span style="color:'+ac+';font-weight:700">'+fmtRate(ar)+'</span>'
+      +'<div class="rate-bar"><div class="rate-fill" style="width:'+Math.round(ar*100)+'%;background:'+ac+'"></div></div></td>'
+      +'<td class="th-def">'+m.def_판+'</td>'
+      +'<td class="th-def">'+m.dw+'</td>'
+      +'<td class="th-def">'+m.dd+'</td>'
+      +'<td class="th-def">'+m.dl+'</td>'
+      +'<td class="th-def"><span style="color:'+dc+';font-weight:700">'+fmtRate(dr)+'</span>'
+      +'<div class="rate-bar"><div class="rate-fill" style="width:'+Math.round(dr*100)+'%;background:'+dc+'"></div></div></td>'
+      +'<td class="th-etc">'+rankBadge(atkRank[m.origIdx])+'</td>'
+      +'<td class="th-etc">'+rankBadge(defRank[m.origIdx])+'</td>'
+      +'<td class="th-etc">'+noteTag(m.note||'')+'</td>'
+      +(canWrite?'<td>'+actions+'</td>':'')
+      +'</tr>';
   }).join('');
 
-  const tAll=tW+tD+tL, tRate=calcRate(tW,tD,tL), tc=rateColor(tRate);
-  const delHeader = canWrite ? '<th></th>' : '<th></th>';
-  wrap.innerHTML='<table><thead><tr><th>단원 아이디</th><th>승</th><th>무</th><th>패</th><th>총경기</th><th>승률</th>'+delHeader+'</tr></thead><tbody>'
-    +rows+'<tr class="total-row"><td>📊 합계</td><td>'+tW+'</td><td>'+tD+'</td><td>'+tL+'</td><td>'+tAll+'</td>'
-    +'<td><span class="rate-text" style="color:'+tc+'">'+(tRate*100).toFixed(1)+'%</span></td><td></td></tr></tbody></table>';
+  const hdr = canWrite ? '<th class="th-etc"></th>' : '';
+  wrap.innerHTML = '<table>'
+    +'<thead><tr>'
+    +thSort('name','닉네임','th-etc')
+    +'<th class="th-atk" colspan="7" style="text-align:center;border-bottom:none">⚔️ 공격</th>'
+    +'<th class="th-def" colspan="5" style="text-align:center;border-bottom:none">🛡️ 방어</th>'
+    +'<th class="th-etc" colspan="3"></th>'+(canWrite?'<th></th>':'')
+    +'</tr><tr>'
+    +thSort('name','닉네임','th-etc')
+    +thSort('atk_판','판수','th-atk')
+    +thSort('aw','승','th-atk')
+    +thSort('ad','무','th-atk')
+    +thSort('al','패','th-atk')
+    +thSort('at','팅/미참','th-atk')
+    +thSort('atk_rate','승률','th-atk')
+    +thSort('def_판','판수','th-def')
+    +thSort('dw','승','th-def')
+    +thSort('dd','무','th-def')
+    +thSort('dl','패','th-def')
+    +thSort('def_rate','승률','th-def')
+    +thSort('atk_rate','공격순위','th-etc')
+    +thSort('def_rate','방어순위','th-etc')
+    +'<th class="th-etc">비고</th>'+hdr
+    +'</tr></thead><tbody>'+rows
+    +'<tr class="total-row">'
+    +'<td>📊 합계</td>'
+    +'<td class="th-atk">'+tAP+'</td>'
+    +'<td class="th-atk">'+tAW+'</td>'
+    +'<td class="th-atk">'+tAD+'</td>'
+    +'<td class="th-atk">'+tAL+'</td>'
+    +'<td class="th-atk">'+tAT+'</td>'
+    +'<td class="th-atk"><span style="color:'+rateColor(tAR)+';font-weight:700">'+fmtRate(tAR)+'</span></td>'
+    +'<td class="th-def">'+tDP+'</td>'
+    +'<td class="th-def">'+tDW+'</td>'
+    +'<td class="th-def">'+tDD+'</td>'
+    +'<td class="th-def">'+tDL+'</td>'
+    +'<td class="th-def"><span style="color:'+rateColor(tDR)+';font-weight:700">'+fmtRate(tDR)+'</span></td>'
+    +'<td colspan="3"'+(canWrite?' colspan="4"':'')+'></td>'
+    +'</tr></tbody></table>';
+}
+
+function setSort(key) {
+  if(sortKey===key) sortDir*=-1;
+  else { sortKey=key; sortDir=-1; }
+  render();
 }
 
 function setStatus(msg, type) {
@@ -207,41 +398,100 @@ function setStatus(msg, type) {
   if(type==='ok') setTimeout(()=>{el.textContent='';el.className='status';},2000);
 }
 
+function getInputs(prefix) {
+  return {
+    aw: parseInt(document.getElementById(prefix+'aw').value)||0,
+    ad: parseInt(document.getElementById(prefix+'ad').value)||0,
+    al: parseInt(document.getElementById(prefix+'al').value)||0,
+    at: parseInt(document.getElementById(prefix+'at').value)||0,
+    dw: parseInt(document.getElementById(prefix+'dw').value)||0,
+    dd: parseInt(document.getElementById(prefix+'dd').value)||0,
+    dl: parseInt(document.getElementById(prefix+'dl').value)||0,
+    dt: parseInt(document.getElementById(prefix+'dt').value)||0,
+  };
+}
+
 async function addMember() {
-  if (!canWrite) return;
-  const id=document.getElementById('inp-id').value.trim();
-  const w=parseInt(document.getElementById('inp-w').value)||0;
-  const d=parseInt(document.getElementById('inp-d').value)||0;
-  const l=parseInt(document.getElementById('inp-l').value)||0;
-  if(!id){setStatus('아이디를 입력해주세요','err');return;}
-  const btn=document.getElementById('btn-add');
+  const name = document.getElementById('inp-name').value.trim();
+  if(!name){setStatus('닉네임을 입력해주세요','err');return;}
+  const note = document.getElementById('inp-note').value.trim();
+  const ap = parseInt(document.getElementById('inp-ap').value)||0;
+  const dp = parseInt(document.getElementById('inp-dp').value)||0;
+  const aw=parseInt(document.getElementById('inp-aw').value)||0;
+  const ad=parseInt(document.getElementById('inp-ad').value)||0;
+  const al=parseInt(document.getElementById('inp-al').value)||0;
+  const at=parseInt(document.getElementById('inp-at').value)||0;
+  const dw=parseInt(document.getElementById('inp-dw').value)||0;
+  const dd=parseInt(document.getElementById('inp-dd').value)||0;
+  const dl=parseInt(document.getElementById('inp-dl').value)||0;
+  const btn = document.getElementById('btn-add');
   btn.disabled=true; setStatus('저장 중...');
-  members.push({id,w,d,l});
+  members.push({name, ap, aw, ad, al, at, dp, dw, dd, dl, dt:0, note});
   try {
     await save(); render();
-    document.getElementById('inp-id').value='';
-    document.getElementById('inp-w').value=0;
-    document.getElementById('inp-d').value=0;
-    document.getElementById('inp-l').value=0;
-    document.getElementById('inp-id').focus();
+    ['inp-name','inp-ap','inp-aw','inp-ad','inp-al','inp-at','inp-dp','inp-dw','inp-dd','inp-dl','inp-note'].forEach(id=>{
+      const el=document.getElementById(id);
+      el.value = id==='inp-name'||id==='inp-note' ? '' : 0;
+    });
+    document.getElementById('inp-name').focus();
     setStatus('추가됐어요!','ok');
   } catch(e) { members.pop(); setStatus('저장 실패','err'); }
   btn.disabled=false;
 }
 
-async function deleteMember(idx) {
-  if (!canWrite) return;
+async function delMember(idx) {
+  if(!confirm(members[idx].name+' 삭제할까요?')) return;
   members.splice(idx,1);
-  try { await save(); render(); setStatus('삭제됐어요','ok'); }
-  catch(e) { setStatus('삭제 실패','err'); }
+  try { await save(); render(); }
+  catch(e) { alert('삭제 실패'); }
 }
 
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter') {
-    const lock = document.getElementById('lock-screen');
-    if (lock.style.display !== 'none') unlock();
-    else addMember();
+function openEdit(idx) {
+  const m = members[idx];
+  document.getElementById('edit-idx').value = idx;
+  document.getElementById('edit-name').value = m.name||'';
+  document.getElementById('edit-ap').value = m.ap||0;
+  document.getElementById('edit-aw').value = m.aw||0;
+  document.getElementById('edit-ad').value = m.ad||0;
+  document.getElementById('edit-al').value = m.al||0;
+  document.getElementById('edit-at').value = m.at||0;
+  document.getElementById('edit-dp').value = m.dp||0;
+  document.getElementById('edit-dw').value = m.dw||0;
+  document.getElementById('edit-dd').value = m.dd||0;
+  document.getElementById('edit-dl').value = m.dl||0;
+  document.getElementById('edit-note').value = m.note||'';
+  document.getElementById('edit-modal').classList.add('show');
+}
+function closeEdit() { document.getElementById('edit-modal').classList.remove('show'); }
+async function saveEdit() {
+  const idx = parseInt(document.getElementById('edit-idx').value);
+  const name = document.getElementById('edit-name').value.trim();
+  if(!name){alert('닉네임을 입력해주세요');return;}
+  const note = document.getElementById('edit-note').value.trim();
+  members[idx] = { name,
+    ap:parseInt(document.getElementById('edit-ap').value)||0,
+    aw:parseInt(document.getElementById('edit-aw').value)||0,
+    ad:parseInt(document.getElementById('edit-ad').value)||0,
+    al:parseInt(document.getElementById('edit-al').value)||0,
+    at:parseInt(document.getElementById('edit-at').value)||0,
+    dp:parseInt(document.getElementById('edit-dp').value)||0,
+    dw:parseInt(document.getElementById('edit-dw').value)||0,
+    dd:parseInt(document.getElementById('edit-dd').value)||0,
+    dl:parseInt(document.getElementById('edit-dl').value)||0,
+    dt:0,
+    note
+  };
+  try { await save(); render(); closeEdit(); setStatus('수정됐어요!','ok'); }
+  catch(e) { alert('저장 실패'); }
+}
+
+document.getElementById('edit-modal').addEventListener('click', e=>{ if(e.target===document.getElementById('edit-modal')) closeEdit(); });
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter'){
+    if(document.getElementById('lock-screen').style.display!=='none') unlock();
+    else if(!document.getElementById('edit-modal').classList.contains('show')) addMember();
   }
+  if(e.key==='Escape') closeEdit();
 });
 </script>
 </body>
