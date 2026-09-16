@@ -40,13 +40,40 @@
   .status { text-align: center; font-size: 0.8rem; color: #6b7280; margin-top: 8px; min-height: 20px; }
   .status.ok { color: #34d399; }
   .status.err { color: #f87171; }
+  /* 비밀번호 잠금 */
+  #lock-screen { position: fixed; inset: 0; background: #0f0f1a; display: flex; align-items: center; justify-content: center; z-index: 999; }
+  .lock-box { background: #1a1a2e; border: 1px solid #2d2d4e; border-radius: 16px; padding: 32px; text-align: center; width: 300px; }
+  .lock-box h2 { color: #a78bfa; margin-bottom: 8px; }
+  .lock-box p { color: #6b7280; font-size: 0.85rem; margin-bottom: 20px; }
+  .lock-box input { width: 100%; background: #0f0f1a; border: 1px solid #3d3d6e; border-radius: 8px; color: #e0e0ff; padding: 10px 14px; font-size: 1.1rem; letter-spacing: 4px; outline: none; text-align: center; margin-bottom: 12px; }
+  .lock-box input:focus { border-color: #7c3aed; }
+  .btn-unlock { width: 100%; background: #7c3aed; color: #fff; border: none; border-radius: 8px; padding: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; }
+  .btn-unlock:hover { background: #6d28d9; }
+  .lock-err { color: #ef4444; font-size: 0.85rem; margin-top: 8px; min-height: 20px; }
+  .auth-badge { text-align: center; font-size: 0.75rem; color: #34d399; margin-bottom: 8px; }
 </style>
 </head>
 <body>
+
+<!-- 비밀번호 잠금 화면 -->
+<div id="lock-screen">
+  <div class="lock-box">
+    <h2>⚔️ 레인가르 기사단</h2>
+    <p>작성 권한 비밀번호를 입력하세요</p>
+    <input type="password" id="pw-input" placeholder="••••••" maxlength="10" />
+    <button class="btn-unlock" onclick="unlock()">입장</button>
+    <div class="lock-err" id="lock-err"></div>
+    <div style="margin-top:16px;">
+      <a href="#" onclick="viewOnly()" style="color:#6b7280;font-size:0.8rem;text-decoration:underline;">비밀번호 없이 보기만 할게요</a>
+    </div>
+  </div>
+</div>
+
 <h1>⚔️ 레인가르 기사단</h1>
 <div class="subtitle">승률 = (승 + 무×0.5) ÷ 총 경기수</div>
+<div class="auth-badge" id="auth-badge"></div>
 
-<div class="card">
+<div class="card" id="input-card" style="display:none;">
   <div class="input-row">
     <div class="input-group id-group">
       <label>단원 아이디</label>
@@ -72,16 +99,40 @@
 <div class="card">
   <div id="tbl-wrap"><div class="empty">불러오는 중...</div></div>
 </div>
-<div class="formula">※ 무승부는 0.5승으로 계산 | 누구나 입력 가능</div>
+<div class="formula">※ 무승부는 0.5승으로 계산 | 누구나 열람 가능</div>
 
 <script>
 const API_KEY = '$2a$10$pY1/DGmmZ7XGu7gsjExkQ.1nx5e.VKGhWSnfrlL/WvWwDB/8la5mW';
 const BIN_URL = 'https://api.jsonbin.io/v3/b';
+const PASSWORD = '794613';
 let BIN_ID = localStorage.getItem('raingard_bin_id') || '';
 let members = [];
+let canWrite = false;
+
+function unlock() {
+  const val = document.getElementById('pw-input').value;
+  if (val === PASSWORD) {
+    canWrite = true;
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('input-card').style.display = 'block';
+    document.getElementById('auth-badge').textContent = '✅ 작성 권한 있음';
+    load();
+  } else {
+    document.getElementById('lock-err').textContent = '비밀번호가 틀렸어요';
+    document.getElementById('pw-input').value = '';
+  }
+}
+
+function viewOnly() {
+  canWrite = false;
+  document.getElementById('lock-screen').style.display = 'none';
+  document.getElementById('input-card').style.display = 'none';
+  document.getElementById('auth-badge').textContent = '👁️ 보기 전용';
+  load();
+}
 
 async function initBin() {
-  if (BIN_ID) return true;
+  if (BIN_ID) return;
   const res = await fetch(BIN_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY, 'X-Bin-Name': 'raingard' },
@@ -90,17 +141,18 @@ async function initBin() {
   const data = await res.json();
   BIN_ID = data.metadata.id;
   localStorage.setItem('raingard_bin_id', BIN_ID);
-  return true;
 }
 
 async function load() {
-  if (!BIN_ID) { await initBin(); }
-  const res = await fetch(BIN_URL + '/' + BIN_ID + '/latest', {
-    headers: { 'X-Master-Key': API_KEY }
-  });
-  const data = await res.json();
-  members = (data.record && data.record.list) || [];
-  render();
+  if (!BIN_ID) await initBin();
+  try {
+    const res = await fetch(BIN_URL + '/' + BIN_ID + '/latest', { headers: { 'X-Master-Key': API_KEY } });
+    const data = await res.json();
+    members = (data.record && data.record.list) || [];
+    render();
+  } catch(e) {
+    document.getElementById('tbl-wrap').innerHTML = '<div class="empty">불러오기 실패</div>';
+  }
 }
 
 async function save() {
@@ -131,17 +183,20 @@ function render() {
   let tW=0,tD=0,tL=0;
   members.forEach(m=>{tW+=m.w;tD+=m.d;tL+=m.l;});
 
+  const delBtn = canWrite ? (i) => '<button class="btn btn-del" onclick="deleteMember('+i+')">삭제</button>' : () => '';
+
   const rows = sorted.map((m,rank)=>{
     const t=m.w+m.d+m.l, pct=(m.rate*100).toFixed(1), bw=Math.round(m.rate*100), col=rateColor(m.rate);
     return '<tr class="'+(rank===0&&t>0?'top1':'')+'">'
       +'<td>'+m.id+'</td><td>'+m.w+'</td><td>'+m.d+'</td><td>'+m.l+'</td><td>'+t+'</td>'
       +'<td><span class="rate-text" style="color:'+col+'">'+pct+'%</span>'
       +'<div class="rate-bar"><div class="rate-fill" style="width:'+bw+'%;background:'+col+'"></div></div></td>'
-      +'<td><button class="btn btn-del" onclick="deleteMember('+m.origIdx+')">삭제</button></td></tr>';
+      +'<td>'+delBtn(m.origIdx)+'</td></tr>';
   }).join('');
 
   const tAll=tW+tD+tL, tRate=calcRate(tW,tD,tL), tc=rateColor(tRate);
-  wrap.innerHTML='<table><thead><tr><th>단원 아이디</th><th>승</th><th>무</th><th>패</th><th>총경기</th><th>승률</th><th></th></tr></thead><tbody>'
+  const delHeader = canWrite ? '<th></th>' : '<th></th>';
+  wrap.innerHTML='<table><thead><tr><th>단원 아이디</th><th>승</th><th>무</th><th>패</th><th>총경기</th><th>승률</th>'+delHeader+'</tr></thead><tbody>'
     +rows+'<tr class="total-row"><td>📊 합계</td><td>'+tW+'</td><td>'+tD+'</td><td>'+tL+'</td><td>'+tAll+'</td>'
     +'<td><span class="rate-text" style="color:'+tc+'">'+(tRate*100).toFixed(1)+'%</span></td><td></td></tr></tbody></table>';
 }
@@ -153,6 +208,7 @@ function setStatus(msg, type) {
 }
 
 async function addMember() {
+  if (!canWrite) return;
   const id=document.getElementById('inp-id').value.trim();
   const w=parseInt(document.getElementById('inp-w').value)||0;
   const d=parseInt(document.getElementById('inp-d').value)||0;
@@ -174,13 +230,19 @@ async function addMember() {
 }
 
 async function deleteMember(idx) {
+  if (!canWrite) return;
   members.splice(idx,1);
   try { await save(); render(); setStatus('삭제됐어요','ok'); }
   catch(e) { setStatus('삭제 실패','err'); }
 }
 
-document.addEventListener('keydown',e=>{ if(e.key==='Enter') addMember(); });
-load();
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const lock = document.getElementById('lock-screen');
+    if (lock.style.display !== 'none') unlock();
+    else addMember();
+  }
+});
 </script>
 </body>
 </html>
