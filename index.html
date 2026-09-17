@@ -845,7 +845,7 @@ async function runOCR(input) {
       ).join('') + `<button class="btn-add" style="font-size:0.82rem;padding:6px 14px;letter-spacing:0;background:linear-gradient(135deg,#0a2010,#1a4020,#0a2010);border-color:#3aaa6a;color:#3aaa6a" onclick="applyAllOCR()">전체 등록</button>`;
       window._ocrData = parsed;
     } else {
-      statusEl.textContent = '인식 실패 — 이미지를 확인해주세요';
+      statusEl.textContent = '인식 실패 — raw: ' + raw.slice(0, 200);
       statusEl.style.color = 'var(--red)';
     }
   } catch(e) {
