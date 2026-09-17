@@ -33,7 +33,7 @@ export default async function handler(req, res) {
       }
     );
     const data = await response.json();
-    res.status(200).json({ result: JSON.stringify(data) });
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || ''; res.status(200).json({ result: text });
   } catch (e) {
     console.error('Error:', e.message);
     res.status(500).json({ error: e.message });
