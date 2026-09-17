@@ -480,6 +480,16 @@ tr:hover td { background: #1a1228 !important; }
   <div class="guild-sub">기사단 전투 기록부</div>
   <div class="divider"><div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line"></div></div>
   <div class="auth-badge" id="auth-badge"></div>
+  <!-- 시즌 선택 -->
+  <div id="season-bar" style="display:none;margin-top:16px;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap">
+    <div class="divider" style="max-width:300px"><div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line"></div></div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center">
+      <select id="season-select" onchange="changeSeason()" style="background:var(--bg2);border:1px solid var(--gold-dk);border-radius:3px;color:var(--gold);padding:8px 14px;font-family:'Cinzel',serif;font-size:0.88rem;letter-spacing:1px;outline:none;cursor:pointer"></select>
+      <button onclick="addSeason()" style="background:transparent;border:1px solid var(--gold-dk);border-radius:3px;color:var(--gold-dk);padding:8px 14px;font-family:'Cinzel',serif;font-size:0.82rem;cursor:pointer;letter-spacing:1px">+ 시즌 추가</button>
+      <button onclick="exportImage()" style="background:linear-gradient(135deg,#1a1030,#2a1850,#1a1030);border:1px solid var(--purple);border-radius:3px;color:var(--purple-lt);padding:8px 14px;font-family:'Cinzel',serif;font-size:0.82rem;cursor:pointer;letter-spacing:1px">📷 이미지 저장</button>
+    </div>
+    <div class="divider" style="max-width:300px"><div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line"></div></div>
+  </div>
 </div>
 
 <!-- INPUT -->
@@ -520,7 +530,7 @@ tr:hover td { background: #1a1228 !important; }
     <div class="section-label" style="color:var(--gold-dk);margin-bottom:8px">📷 이미지로 자동 입력</div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <label style="cursor:pointer">
-        <input type="file" id="ocr-file" accept="image/*" style="display:none" onchange="runOCR(this)"/>
+        <input type="file" id="ocr-file" accept="image/*" multiple style="display:none" onchange="runOCR(this)"/>
         <div class="btn-add" style="background:linear-gradient(135deg,#1a1030,#2a1850,#1a1030);border-color:var(--purple);color:var(--purple-lt);font-size:0.9rem;display:inline-flex;align-items:center;gap:6px">
           이미지 업로드
         </div>
@@ -549,10 +559,59 @@ tr:hover td { background: #1a1228 !important; }
 <script>
 const API_KEY = '$2a$10$pY1/DGmmZ7XGu7gsjExkQ.1nx5e.VKGhWSnfrlL/WvWwDB/8la5mW';
 const BIN_URL = 'https://api.jsonbin.io/v3/b';
-const BIN_NAME = 'raingard_battle';
 const PASSWORD = '794613';
-let BIN_ID = localStorage.getItem('raingard_battle_bin_id') || '';
 let members = [], canWrite = false, sortKey = 'atk_rate', sortDir = -1;
+
+// ── 시즌 관리 ──
+let seasons = JSON.parse(localStorage.getItem('raingard_seasons') || '[]');
+let currentSeason = localStorage.getItem('raingard_current_season') || '';
+
+function saveSeasonsLocal() { localStorage.setItem('raingard_seasons', JSON.stringify(seasons)); }
+
+function getSeasonBinKey(sname) { return 'raingard_bin_' + sname.replace(/\s/g,'_'); }
+
+function renderSeasonSelect() {
+  const sel = document.getElementById('season-select');
+  sel.innerHTML = seasons.map(s =>
+    `<option value="${s}" ${s===currentSeason?'selected':''}>${s}</option>`
+  ).join('');
+}
+
+async function changeSeason() {
+  currentSeason = document.getElementById('season-select').value;
+  localStorage.setItem('raingard_current_season', currentSeason);
+  await load();
+}
+
+async function addSeason() {
+  const year = new Date().getFullYear();
+  const num = seasons.filter(s=>s.startsWith(year+'')).length + 1;
+  const name = prompt('시즌 이름을 입력하세요', `${year}년 ${num}시즌`);
+  if (!name || seasons.includes(name)) return;
+  seasons.push(name);
+  saveSeasonsLocal();
+  currentSeason = name;
+  localStorage.setItem('raingard_current_season', name);
+  renderSeasonSelect();
+  members = [];
+  await save();
+  render();
+}
+
+function initSeasons() {
+  if (seasons.length === 0) {
+    const y = new Date().getFullYear();
+    seasons = [`${y}년 1시즌`];
+    saveSeasonsLocal();
+  }
+  if (!currentSeason || !seasons.includes(currentSeason)) {
+    currentSeason = seasons[seasons.length - 1];
+    localStorage.setItem('raingard_current_season', currentSeason);
+  }
+  renderSeasonSelect();
+  document.getElementById('season-bar').style.display = 'flex';
+  document.getElementById('season-bar').style.flexDirection = 'column';
+}
 
 function unlock() {
   if (document.getElementById('pw-input').value === PASSWORD) {
@@ -560,6 +619,7 @@ function unlock() {
     document.getElementById('lock-screen').style.display = 'none';
     document.getElementById('input-card').style.display = 'block';
     document.getElementById('ocr-section').style.display = 'block';
+    initSeasons();
     document.getElementById('auth-badge').innerHTML = '<span style="color:#3aaa6a;font-size:0.78rem;letter-spacing:2px">✦ 작성 권한 부여됨</span>';
     load();
   } else {
@@ -570,18 +630,22 @@ function unlock() {
 function viewOnly() {
   document.getElementById('lock-screen').style.display = 'none';
   document.getElementById('auth-badge').innerHTML = '<span style="color:#5a4a7a;font-size:0.78rem;letter-spacing:2px">◈ 열람 전용</span>';
+  initSeasons();
   load();
 }
 
 async function initBin() {
-  if (BIN_ID) return;
+  const key = getSeasonBinKey(currentSeason);
+  let BIN_ID = localStorage.getItem(key) || '';
+  if (BIN_ID) return BIN_ID;
   const res = await fetch(BIN_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY, 'X-Bin-Name': BIN_NAME },
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY, 'X-Bin-Name': 'raingard_'+currentSeason.replace(/\s/g,'_') },
     body: JSON.stringify({ list: [] })
   });
   BIN_ID = (await res.json()).metadata.id;
-  localStorage.setItem('raingard_battle_bin_id', BIN_ID);
+  localStorage.setItem(key, BIN_ID);
+  return BIN_ID;
 }
 async function load() {
   if (!BIN_ID) await initBin();
@@ -593,7 +657,8 @@ async function load() {
   } catch(e) { document.getElementById('tbl-wrap').innerHTML = '<div class="empty">— 데이터를 불러올 수 없습니다 —</div>'; }
 }
 async function save() {
-  await fetch(BIN_URL+'/'+BIN_ID, {
+  const id = await getBinId();
+  await fetch(BIN_URL+'/'+id, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
     body: JSON.stringify({ list: members })
@@ -778,91 +843,247 @@ async function saveEdit() {
   };
   try{await save();render();closeEdit();setStatus('수정됐습니다','ok');}catch(e){alert('저장 실패');}
 }
+// ── 이미지 저장 ──
+async function exportImage() {
+  const tbl = document.getElementById('tbl-wrap');
+  if (!tbl || !members.length) { alert('데이터가 없어요'); return; }
+
+  const canvas = document.createElement('canvas');
+  const W = 1200, PAD = 40;
+  const rows = members.length + 2; // header + data + total
+  const ROW_H = 44, HEADER_H = 80, TOP_H = 160, BOTTOM_H = 60;
+  const H = TOP_H + HEADER_H + rows * ROW_H + BOTTOM_H + PAD*2;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // 배경
+  const bgGrad = ctx.createLinearGradient(0,0,0,H);
+  bgGrad.addColorStop(0, '#0f0820');
+  bgGrad.addColorStop(1, '#08050f');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0,0,W,H);
+
+  // 패턴
+  ctx.strokeStyle = '#2a1f3d33';
+  ctx.lineWidth = 0.5;
+  for(let x=0;x<W;x+=30){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=30){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+  // 상단 장식선
+  const goldGrad = ctx.createLinearGradient(0,0,W,0);
+  goldGrad.addColorStop(0,'transparent');
+  goldGrad.addColorStop(0.5,'#c9a84c');
+  goldGrad.addColorStop(1,'transparent');
+  ctx.strokeStyle = goldGrad; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(0,2); ctx.lineTo(W,2); ctx.stroke();
+
+  // 제목
+  ctx.font = 'bold 32px Cinzel, serif';
+  ctx.fillStyle = '#c9a84c';
+  ctx.textAlign = 'center';
+  ctx.fillText('RAINGARD', W/2, 60);
+  ctx.font = '14px Cinzel, serif';
+  ctx.fillStyle = '#5a4a7a';
+  ctx.fillText('GUILD BATTLE RECORDS', W/2, 85);
+
+  // 시즌명
+  ctx.font = 'bold 18px Noto Sans KR, sans-serif';
+  ctx.fillStyle = '#e8c87a';
+  ctx.fillText(currentSeason, W/2, 120);
+
+  // 구분선
+  ctx.strokeStyle = '#2a1f3d'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(PAD, TOP_H-10); ctx.lineTo(W-PAD, TOP_H-10); ctx.stroke();
+
+  // 컬럼 정의
+  const cols = [
+    {label:'닉네임', w:180, align:'left', key:'name'},
+    {label:'공격 판수', w:70, align:'center', key:'atk_판'},
+    {label:'공격 승', w:55, align:'center', key:'aw', atk:true},
+    {label:'공격 무', w:55, align:'center', key:'ad', atk:true},
+    {label:'공격 패', w:55, align:'center', key:'al', atk:true},
+    {label:'팅', w:45, align:'center', key:'at', atk:true},
+    {label:'공격 승률', w:90, align:'center', key:'atk_rate', atk:true},
+    {label:'방어 판수', w:70, align:'center', key:'def_판'},
+    {label:'방어 승', w:55, align:'center', key:'dw', def:true},
+    {label:'방어 무', w:55, align:'center', key:'dd', def:true},
+    {label:'방어 패', w:55, align:'center', key:'dl', def:true},
+    {label:'방어 승률', w:90, align:'center', key:'def_rate', def:true},
+    {label:'공격순위', w:70, align:'center', key:'_ar'},
+    {label:'방어순위', w:70, align:'center', key:'_dr'},
+  ];
+  let totalW = cols.reduce((s,c)=>s+c.w,0);
+  let scaleX = (W-PAD*2)/totalW;
+
+  function rateColor(r) {
+    if(r>=0.9) return '#3aaa6a';
+    if(r>=0.7) return '#c9a84c';
+    if(r>=0.5) return '#8a8aff';
+    return '#c44040';
+  }
+  function calcRate(w,d,l){const t=w+d+l;return t===0?0:(w+d*0.5)/t;}
+  function getVal(m){
+    const aw=m.aw||0,ad=m.ad||0,al=m.al||0,at=m.at||0;
+    const dw=m.dw||0,dd=m.dd||0,dl=m.dl||0;
+    return {aw,ad,al,at,dw,dd,dl,atk_판:m.ap||0,def_판:m.dp||0,atk_rate:calcRate(aw,ad,al),def_rate:calcRate(dw,dd,dl)};
+  }
+
+  const sorted = [...members].map((m,i)=>({...m,origIdx:i,...getVal(m)})).sort((a,b)=>b.atk_rate-a.atk_rate);
+  const arMap={}, drMap={};
+  [...sorted].sort((a,b)=>b.atk_rate-a.atk_rate).forEach((m,i)=>arMap[m.origIdx]=i+1);
+  [...sorted].sort((a,b)=>b.def_rate-a.def_rate).forEach((m,i)=>drMap[m.origIdx]=i+1);
+
+  // 헤더 그리기
+  let y = TOP_H; let x = PAD;
+  ctx.fillStyle = '#1a0a2e';
+  ctx.fillRect(PAD, y, W-PAD*2, ROW_H);
+  ctx.font = 'bold 12px Noto Sans KR, sans-serif';
+  ctx.textBaseline = 'middle';
+  cols.forEach(col=>{
+    const cw = col.w * scaleX;
+    ctx.fillStyle = col.atk ? '#e8a050' : col.def ? '#62a8e8' : '#8a7aaa';
+    ctx.textAlign = col.align;
+    const tx = col.align==='left' ? x+8 : x+cw/2;
+    ctx.fillText(col.label, tx, y+ROW_H/2);
+    x += cw;
+  });
+  y += ROW_H;
+
+  // 데이터 행
+  sorted.forEach((m, ri) => {
+    const v = m;
+    x = PAD;
+    if(ri%2===0){ctx.fillStyle='#0f0820';}else{ctx.fillStyle='#0a0615';}
+    ctx.fillRect(PAD, y, W-PAD*2, ROW_H);
+    ctx.strokeStyle = '#1a1228'; ctx.lineWidth=0.5;
+    ctx.beginPath();ctx.moveTo(PAD,y+ROW_H);ctx.lineTo(W-PAD,y+ROW_H);ctx.stroke();
+
+    const vals = {
+      name: m.name, atk_판: v.atk_판, aw:v.aw, ad:v.ad, al:v.al, at:v.at,
+      atk_rate: (v.atk_rate*100).toFixed(1)+'%',
+      def_판: v.def_판, dw:v.dw, dd:v.dd, dl:v.dl,
+      def_rate: (v.def_rate*100).toFixed(1)+'%',
+      _ar: arMap[m.origIdx]+'위', _dr: drMap[m.origIdx]+'위'
+    };
+
+    cols.forEach(col=>{
+      const cw = col.w * scaleX;
+      ctx.font = col.key==='name' ? 'bold 13px Noto Sans KR' : '12px Noto Sans KR';
+      if(col.key==='atk_rate') ctx.fillStyle = rateColor(v.atk_rate);
+      else if(col.key==='def_rate') ctx.fillStyle = rateColor(v.def_rate);
+      else if(col.key==='_ar') ctx.fillStyle = arMap[m.origIdx]===1?'#e8c87a':arMap[m.origIdx]===2?'#b8b8c8':arMap[m.origIdx]===3?'#c87a40':'#8a7aaa';
+      else if(col.key==='_dr') ctx.fillStyle = drMap[m.origIdx]===1?'#e8c87a':drMap[m.origIdx]===2?'#b8b8c8':drMap[m.origIdx]===3?'#c87a40':'#8a7aaa';
+      else if(col.key==='name') ctx.fillStyle = '#d4c8e8';
+      else ctx.fillStyle = '#8a7aaa';
+      ctx.textAlign = col.align;
+      const tx = col.align==='left' ? x+8 : x+cw/2;
+      ctx.fillText(String(vals[col.key]??''), tx, y+ROW_H/2);
+      x += cw;
+    });
+    y += ROW_H;
+  });
+
+  // 합계행
+  ctx.fillStyle = '#1a0a2e';
+  ctx.fillRect(PAD, y, W-PAD*2, ROW_H);
+  ctx.font = 'bold 13px Noto Sans KR';
+  ctx.fillStyle = '#c9a84c';
+  ctx.textAlign = 'left';
+  ctx.fillText('전체 합산', PAD+8, y+ROW_H/2);
+  let tAW=0,tAD=0,tAL=0;
+  members.forEach(m=>{tAW+=m.aw||0;tAD+=m.ad||0;tAL+=m.al||0;});
+  const tR = calcRate(tAW,tAD,tAL);
+  ctx.font = 'bold 13px Noto Sans KR';
+  ctx.fillStyle = rateColor(tR);
+  ctx.textAlign = 'center';
+  ctx.fillText('전체 공격승률: '+(tR*100).toFixed(1)+'%', W/2, y+ROW_H/2);
+  y += ROW_H;
+
+  // 하단
+  ctx.strokeStyle = goldGrad; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, H-3); ctx.lineTo(W, H-3); ctx.stroke();
+  ctx.font = '11px Cinzel, serif';
+  ctx.fillStyle = '#3a2a5a';
+  ctx.textAlign = 'center';
+  ctx.fillText('RAINGARD GUILD · '+currentSeason+' · 승률 = (승 + 무×0.5) ÷ 총경기', W/2, H-20);
+
+  // 다운로드
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = 'RAINGARD_'+currentSeason.replace(/\s/g,'_')+'.png';
+  a.click();
+}
+
 // ── OCR: 이미지 → Claude API → 자동 입력 ──
 async function runOCR(input) {
-  const file = input.files[0];
-  if (!file) return;
+  const files = Array.from(input.files);
+  if (!files.length) return;
   const statusEl = document.getElementById('ocr-status');
   const previewWrap = document.getElementById('ocr-preview-wrap');
   const previewImg = document.getElementById('ocr-preview');
   const resultEl = document.getElementById('ocr-result');
   const btnRow = document.getElementById('ocr-btn-row');
 
-  // 미리보기
-  const url = URL.createObjectURL(file);
-  previewImg.src = url;
   previewWrap.style.display = 'block';
+  previewImg.src = URL.createObjectURL(files[0]);
   resultEl.textContent = '';
   btnRow.innerHTML = '';
-  statusEl.textContent = '이미지 분석 중...';
+  statusEl.textContent = `이미지 ${files.length}장 분석 중...`;
   statusEl.style.color = 'var(--gold)';
 
-  // base64 변환 (이미지 리사이즈 후)
-  const base64 = await new Promise((res, rej) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      const MAX = 1024;
-      let w = img.width, h = img.height;
-      if (w > MAX || h > MAX) {
-        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
-        else { w = Math.round(w * MAX / h); h = MAX; }
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      res(canvas.toDataURL('image/jpeg', 0.85).split(',')[1]);
-      URL.revokeObjectURL(url);
-    };
-    img.onerror = () => rej(new Error('이미지 로드 실패'));
-    img.src = url;
-  });
-
-  const prompt = `이 이미지에서 기사단 전투 기록 데이터를 추출해주세요.
-각 단원의 닉네임, 공격(판수/승/무/패/팅·미참), 방어(판수/승/무/패), 비고를 찾아서
-아래 JSON 형식으로만 응답하세요. 다른 텍스트 없이 JSON만:
-
-[
-  {"name":"닉네임","ap":0,"aw":0,"ad":0,"al":0,"at":0,"dp":0,"dw":0,"dd":0,"dl":0,"note":""},
-  ...
-]
-
-팅/미참이 없으면 0, 방어 판수가 없으면 공격 판수와 같게, 비고가 없으면 빈 문자열로 해주세요.`;
-
-  try {
-    const res = await fetch('/api/ocr', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: base64, mediaType: 'image/jpeg' })
+  async function resizeToBase64(file) {
+    return new Promise((res, rej) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const MAX = 1024;
+        let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+          else { w = Math.round(w * MAX / h); h = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        res(canvas.toDataURL('image/jpeg', 0.85).split(',')[1]);
+        URL.revokeObjectURL(url);
+      };
+      img.onerror = () => rej(new Error('이미지 로드 실패'));
+      img.src = url;
     });
-    const data = await res.json();
-    const raw = data.result || '';
-    resultEl.textContent = raw;
+  }
 
-    // JSON 파싱 시도
-    let parsed = [];
+  let allParsed = [];
+  for (let i = 0; i < files.length; i++) {
+    statusEl.textContent = `이미지 분석 중... (${i+1}/${files.length})`;
     try {
-      // JSON 배열 추출
+      const base64 = await resizeToBase64(files[i]);
+      const res = await fetch('/api/ocr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: base64, mediaType: 'image/jpeg' })
+      });
+      const data = await res.json();
+      const raw = data.result || '';
       const start = raw.indexOf('[');
       const end = raw.lastIndexOf(']');
       if (start !== -1 && end !== -1) {
-        parsed = JSON.parse(raw.slice(start, end + 1));
+        const parsed = JSON.parse(raw.slice(start, end + 1));
+        allParsed = allParsed.concat(parsed);
       }
     } catch(e) {}
+  }
 
-    if (parsed.length > 0) {
-      statusEl.textContent = `✦ ${parsed.length}명 인식됨`;
-      statusEl.style.color = 'var(--green)';
-      btnRow.innerHTML = parsed.map((m, i) =>
-        `<button class="btn-add" style="font-size:0.82rem;padding:6px 14px;letter-spacing:0" onclick="applyOCR(${i})">${m.name} 적용</button>`
-      ).join('') + `<button class="btn-add" style="font-size:0.82rem;padding:6px 14px;letter-spacing:0;background:linear-gradient(135deg,#0a2010,#1a4020,#0a2010);border-color:#3aaa6a;color:#3aaa6a" onclick="applyAllOCR()">전체 등록</button>`;
-      window._ocrData = parsed;
-    } else {
-      statusEl.textContent = '인식 실패 — raw: ' + raw.slice(0, 200);
-      statusEl.style.color = 'var(--red)';
-    }
-  } catch(e) {
-    statusEl.textContent = '오류: ' + e.message;
+  if (allParsed.length > 0) {
+    statusEl.textContent = `✦ ${allParsed.length}명 인식됨`;
+    statusEl.style.color = 'var(--green)';
+    resultEl.textContent = allParsed.map(m => m.name).join(', ');
+    btnRow.innerHTML = allParsed.map((m, i) =>
+      `<button class="btn-add" style="font-size:0.82rem;padding:6px 14px;letter-spacing:0" onclick="applyOCR(${i})">${m.name} 적용</button>`
+    ).join('') + `<button class="btn-add" style="font-size:0.82rem;padding:6px 14px;letter-spacing:0;background:linear-gradient(135deg,#0a2010,#1a4020,#0a2010);border-color:#3aaa6a;color:#3aaa6a" onclick="applyAllOCR()">전체 등록</button>`;
+    window._ocrData = allParsed;
+  } else {
+    statusEl.textContent = '인식 실패 — 이미지를 확인해주세요';
     statusEl.style.color = 'var(--red)';
   }
   input.value = '';
