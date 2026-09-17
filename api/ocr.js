@@ -4,13 +4,18 @@ export default async function handler(req, res) {
   const { image, mediaType } = req.body;
   if (!image || !mediaType) return res.status(400).json({ error: 'image and mediaType required' });
 
-  const prompt = `이 이미지에서 기사단 전투 기록 데이터를 추출해주세요.
-각 단원의 닉네임, 공격(판수/승/무/패/팅·미참), 방어(판수/승/무/패)를 찾아서
-아래 JSON 형식으로만 응답하세요. 다른 텍스트 없이 순수 JSON 배열만:
+  const prompt = `이 이미지는 에픽세븐 게임의 기사단 전투 현황 화면입니다.
+각 단원의 닉네임과 전투 기록(승리/무승부/패배 숫자)을 추출해주세요.
 
-[{"name":"닉네임","ap":0,"aw":0,"ad":0,"al":0,"at":0,"dp":0,"dw":0,"dd":0,"dl":0,"note":""}]
+규칙:
+- 닉네임은 한글/영문/숫자/특수문자 포함 가능
+- "N 승리" → aw(공격 승), "N 무승부" → ad(공격 무), "N 패배" → al(공격 패)
+- 판수(ap)는 승+무+패를 3으로 나눈 값 (소수점 올림)
+- 방어 데이터가 없으면 dp/dw/dd/dl 모두 0
+- 반드시 JSON 배열만 반환, 다른 텍스트 없이
 
-팅/미참 없으면 0, 방어 판수 없으면 공격 판수와 같게, 비고 없으면 빈 문자열.`;
+형식:
+[{"name":"닉네임","ap":1,"aw":3,"ad":0,"al":0,"at":0,"dp":0,"dw":0,"dd":0,"dl":0,"note":""}]`;
 
   try {
     const response = await fetch(
@@ -25,7 +30,10 @@ export default async function handler(req, res) {
               { text: prompt }
             ]
           }],
-          generationConfig: { temperature: 0.1 }
+          generationConfig: {
+            temperature: 0,
+            response_mime_type: 'application/json'
+          }
         })
       }
     );
