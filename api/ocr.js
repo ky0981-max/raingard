@@ -33,11 +33,8 @@ export default async function handler(req, res) {
       }
     );
     const data = await response.json();
-    console.log('Gemini raw:', JSON.stringify(data).slice(0, 500));
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    res.status(200).json({ result: text });
+    res.status(200).json({ result: JSON.stringify(data) });
   } catch (e) {
-    console.error('Error:', e.message);
     res.status(500).json({ error: e.message });
   }
 }
