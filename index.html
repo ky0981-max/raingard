@@ -648,9 +648,9 @@ async function initBin() {
   return BIN_ID;
 }
 async function load() {
-  if (!BIN_ID) await initBin();
   try {
-    const res = await fetch(BIN_URL+'/'+BIN_ID+'/latest', { headers: { 'X-Master-Key': API_KEY } });
+    const id = await getBinId();
+    const res = await fetch(BIN_URL+'/'+id+'/latest', { headers: { 'X-Master-Key': API_KEY } });
     const data = await res.json();
     members = (data.record && data.record.list) || [];
     render();
