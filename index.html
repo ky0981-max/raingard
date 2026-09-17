@@ -817,23 +817,13 @@ async function runOCR(input) {
 팅/미참이 없으면 0, 방어 판수가 없으면 공격 판수와 같게, 비고가 없으면 빈 문자열로 해주세요.`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('/api/ocr', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 2000,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: file.type, data: base64 } },
-            { type: 'text', text: prompt }
-          ]
-        }]
-      })
+      body: JSON.stringify({ image: base64, mediaType: file.type })
     });
     const data = await res.json();
-    const raw = data.content?.[0]?.text || '';
+    const raw = data.result || '';
     resultEl.textContent = raw;
 
     // JSON 파싱 시도
