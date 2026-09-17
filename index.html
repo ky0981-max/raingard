@@ -829,8 +829,12 @@ async function runOCR(input) {
     // JSON 파싱 시도
     let parsed = [];
     try {
-      const match = raw.match(/\[[\s\S]*\]/);
-      if (match) parsed = JSON.parse(match[0]);
+      // JSON 배열 추출
+      const start = raw.indexOf('[');
+      const end = raw.lastIndexOf(']');
+      if (start !== -1 && end !== -1) {
+        parsed = JSON.parse(raw.slice(start, end + 1));
+      }
     } catch(e) {}
 
     if (parsed.length > 0) {
