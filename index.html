@@ -647,6 +647,12 @@ async function initBin() {
   localStorage.setItem(key, BIN_ID);
   return BIN_ID;
 }
+async function getBinId() {
+  const key = getSeasonBinKey(currentSeason);
+  let id = localStorage.getItem(key) || '';
+  if (!id) id = await initBin();
+  return id;
+}
 async function load() {
   try {
     const id = await getBinId();
