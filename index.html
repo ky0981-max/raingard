@@ -3,134 +3,458 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>레인가르 기사단 전투기록</title>
+<title>레인가르 기사단 — 전투 기록</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', sans-serif; background: #0f0f1a; color: #e0e0ff; min-height: 100vh; padding: 20px 12px; }
-  h1 { text-align: center; font-size: 1.5rem; color: #a78bfa; letter-spacing: 2px; margin-bottom: 4px; }
-  .subtitle { text-align: center; font-size: 0.8rem; color: #6b7280; margin-bottom: 20px; }
-  .auth-badge { text-align: center; font-size: 0.75rem; margin-bottom: 10px; }
+:root {
+  --bg:       #0a0810;
+  --bg2:      #10091a;
+  --bg3:      #160d24;
+  --border:   #2a1f3d;
+  --gold:     #c9a84c;
+  --gold-lt:  #e8c87a;
+  --gold-dk:  #8a6a28;
+  --purple:   #6a3fa0;
+  --purple-lt:#9d6fd4;
+  --red:      #c44040;
+  --blue:     #3a7fc1;
+  --blue-lt:  #62a8e8;
+  --green:    #3aaa6a;
+  --text:     #d4c8e8;
+  --text2:    #8a7aaa;
+  --text3:    #5a4a7a;
+  --atk-bg:   #1a0f08;
+  --atk-br:   #4a2800;
+  --def-bg:   #081018;
+  --def-br:   #0a2840;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 0;
+  background-image:
+    radial-gradient(ellipse 80% 40% at 50% 0%, #1a0a2e88 0%, transparent 70%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%232a1f3d' fill-opacity='0.3'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
 
-  /* 잠금 */
-  #lock-screen { position: fixed; inset: 0; background: #0f0f1a; display: flex; align-items: center; justify-content: center; z-index: 999; }
-  .lock-box { background: #1a1a2e; border: 1px solid #2d2d4e; border-radius: 16px; padding: 32px; text-align: center; width: 300px; }
-  .lock-box h2 { color: #a78bfa; margin-bottom: 8px; }
-  .lock-box p { color: #6b7280; font-size: 0.85rem; margin-bottom: 20px; }
-  .lock-box input { width: 100%; background: #0f0f1a; border: 1px solid #3d3d6e; border-radius: 8px; color: #e0e0ff; padding: 10px 14px; font-size: 1.1rem; letter-spacing: 4px; outline: none; text-align: center; margin-bottom: 12px; }
-  .lock-box input:focus { border-color: #7c3aed; }
-  .btn-unlock { width: 100%; background: #7c3aed; color: #fff; border: none; border-radius: 8px; padding: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; }
-  .lock-err { color: #ef4444; font-size: 0.85rem; margin-top: 8px; min-height: 20px; }
+/* ── HEADER ─────────────────────────────── */
+.hero {
+  text-align: center;
+  padding: 48px 20px 32px;
+  position: relative;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, #1a0a2e55 0%, transparent 100%);
+  pointer-events: none;
+}
+.emblem {
+  width: 80px; height: 80px;
+  margin: 0 auto 16px;
+  display: block;
+}
+.guild-name {
+  font-family: 'Cinzel', serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+  background: linear-gradient(135deg, var(--gold-dk) 0%, var(--gold-lt) 50%, var(--gold-dk) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 6px;
+}
+.guild-sub {
+  font-family: 'Cinzel', serif;
+  font-size: 1.02rem;
+  letter-spacing: 6px;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.divider {
+  display: flex; align-items: center; gap: 12px;
+  justify-content: center;
+  margin: 16px auto;
+  max-width: 400px;
+}
+.divider-line {
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-dk), transparent);
+}
+.divider-diamond {
+  width: 8px; height: 8px;
+  background: var(--gold);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+.auth-badge {
+  font-size: 1.0rem;
+  color: var(--text3);
+  margin-top: 4px;
+}
 
-  /* 입력 카드 */
-  .card { background: #1a1a2e; border: 1px solid #2d2d4e; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
-  .card h3 { color: #a78bfa; font-size: 0.95rem; margin-bottom: 12px; }
-  .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
-  .form-grid.wide { grid-template-columns: 2fr repeat(4, 1fr) repeat(4, 1fr); }
-  .fg { display: flex; flex-direction: column; gap: 3px; }
-  .fg label { font-size: 0.7rem; color: #9ca3af; }
-  .fg input { background: #0f0f1a; border: 1px solid #3d3d6e; border-radius: 6px; color: #e0e0ff; padding: 6px 8px; font-size: 0.88rem; outline: none; width: 100%; }
-  .fg input:focus { border-color: #7c3aed; }
-  .section-label { font-size: 0.7rem; color: #f59e0b; font-weight: 700; margin-bottom: 4px; }
-  .form-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; margin-top: 8px; }
-  .form-section { flex: 1; min-width: 200px; }
-  .btn-add { background: #7c3aed; color: #fff; border: none; border-radius: 8px; padding: 8px 20px; font-size: 0.9rem; font-weight: 600; cursor: pointer; height: 34px; align-self: flex-end; white-space: nowrap; }
-  .btn-add:hover { background: #6d28d9; }
-  .btn-add:disabled { background: #4b5563; cursor: not-allowed; }
-  .status { font-size: 0.8rem; margin-top: 6px; min-height: 18px; }
-  .status.ok { color: #34d399; }
-  .status.err { color: #ef4444; }
+/* ── LOCK ────────────────────────────────── */
+#lock-screen {
+  position: fixed; inset: 0;
+  background: #0a0810ee;
+  backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 999;
+}
+.lock-box {
+  background: var(--bg2);
+  border: 1px solid var(--gold-dk);
+  border-radius: 4px;
+  padding: 40px 36px;
+  text-align: center;
+  width: 340px;
+  box-shadow: 0 0 60px #6a3fa033, inset 0 1px 0 #c9a84c33;
+  position: relative;
+}
+.lock-box::before {
+  content: '';
+  position: absolute; top: -1px; left: 20%; right: 20%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.lock-box h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 1.2rem;
+  letter-spacing: 3px;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.lock-box p { color: var(--text2); font-size: 1.05rem; margin-bottom: 24px; }
+.lock-box input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--gold-lt);
+  padding: 12px 16px;
+  font-size: 1.2rem;
+  letter-spacing: 8px;
+  outline: none;
+  text-align: center;
+  margin-bottom: 14px;
+  transition: border-color 0.2s;
+  font-family: 'Cinzel', serif;
+}
+.lock-box input:focus { border-color: var(--gold-dk); }
+.btn-unlock {
+  width: 100%;
+  background: linear-gradient(135deg, #3a2000, #6a4010, #3a2000);
+  border: 1px solid var(--gold-dk);
+  border-radius: 3px;
+  color: var(--gold-lt);
+  padding: 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 2px;
+  font-family: 'Cinzel', serif;
+  transition: all 0.2s;
+}
+.btn-unlock:hover { border-color: var(--gold); color: var(--gold-lt); box-shadow: 0 0 20px #c9a84c44; }
+.lock-err { color: var(--red); font-size: 1.02rem; margin-top: 8px; min-height: 18px; }
+.lock-view { color: var(--text3); font-size: 1.0rem; margin-top: 14px; cursor: pointer; text-decoration: underline; }
 
-  /* 테이블 */
-  .tbl-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 900px; }
-  th { padding: 8px 6px; border-bottom: 2px solid #2d2d4e; text-align: center; white-space: nowrap; font-size: 0.78rem; cursor: pointer; user-select: none; }
-  th:first-child { text-align: left; }
-  th:hover { color: #c4b5fd; }
-  th.sort-asc::after { content: ' ▲'; font-size: 0.65rem; }
-  th.sort-desc::after { content: ' ▼'; font-size: 0.65rem; }
-  td { padding: 8px 6px; border-bottom: 1px solid #1e1e36; text-align: center; vertical-align: middle; white-space: nowrap; }
-  td:first-child { text-align: left; font-weight: 600; color: #c4b5fd; }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: #ffffff08; }
-  .th-atk { background: #2d1b4e; color: #f59e0b; }
-  .th-def { background: #1b2d4e; color: #38bdf8; }
-  .th-etc { background: #1a1a2e; color: #9ca3af; }
-  .rate-bar { background: #1e1e36; border-radius: 3px; height: 4px; width: 60px; margin: 0 auto; margin-top: 3px; }
-  .rate-fill { height: 100%; border-radius: 3px; }
-  .rank-badge { display: inline-block; font-weight: 700; font-size: 0.85rem; }
-  .rank-1 { color: #fbbf24; }
-  .rank-2 { color: #9ca3af; }
-  .rank-3 { color: #f97316; }
-  .total-row td { font-weight: 700; border-top: 2px solid #3d3d6e; background: #ffffff05; color: #f9fafb; }
-  .empty { text-align: center; color: #4b5563; padding: 32px; }
-  .btn-sm { border: none; border-radius: 6px; padding: 3px 8px; font-size: 0.75rem; cursor: pointer; margin-left: 2px; }
-  .btn-edit { background: #7c3aed33; color: #a78bfa; border: 1px solid #a78bfa44; }
-  .btn-del { background: #ef444422; color: #ef4444; border: 1px solid #ef444444; }
-  .tag-수호탑 { background: #065f4622; color: #34d399; border: 1px solid #34d39944; border-radius: 4px; padding: 1px 5px; font-size: 0.72rem; }
-  .tag-성재 { background: #78350f22; color: #fbbf24; border: 1px solid #fbbf2444; border-radius: 4px; padding: 1px 5px; font-size: 0.72rem; }
-  input.note-tag { width: 80px; }
+/* ── PANEL ───────────────────────────────── */
+.panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 20px 24px;
+  margin: 0 20px 16px;
+  position: relative;
+  box-shadow: 0 4px 32px #00000055;
+}
+.panel::before {
+  content: '';
+  position: absolute; top: -1px; left: 10%; right: 10%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-dk), transparent);
+}
+.panel-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.0rem;
+  letter-spacing: 3px;
+  color: var(--gold-dk);
+  margin-bottom: 14px;
+  text-transform: uppercase;
+}
 
-  /* 수정 모달 */
-  #edit-modal { display: none; position: fixed; inset: 0; background: #00000099; align-items: center; justify-content: center; z-index: 888; }
-  #edit-modal.show { display: flex; }
-  .edit-box { background: #1a1a2e; border: 1px solid #2d2d4e; border-radius: 16px; padding: 24px; width: 520px; max-width: 96vw; max-height: 90vh; overflow-y: auto; }
-  .edit-box h3 { color: #a78bfa; margin-bottom: 16px; }
-  .edit-section { margin-bottom: 12px; }
-  .edit-section .section-label { margin-bottom: 6px; }
-  .edit-grid { display: grid; grid-template-columns: 2fr repeat(4, 1fr); gap: 6px; }
-  .edit-grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-  .edit-btns { display: flex; gap: 8px; margin-top: 16px; }
-  .btn-save { flex: 1; background: #7c3aed; color: #fff; border: none; border-radius: 8px; padding: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; }
-  .btn-cancel { flex: 1; background: transparent; color: #9ca3af; border: 1px solid #3d3d6e; border-radius: 8px; padding: 10px; font-size: 0.95rem; cursor: pointer; }
+/* ── INPUT FORM ──────────────────────────── */
+.form-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+.form-section { flex: 1; min-width: 180px; }
+.section-label {
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.fg { display: flex; flex-direction: column; gap: 3px; }
+.fg label { font-size: 1.02rem; color: var(--text2); }
+.fg input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text);
+  padding: 10px 12px;
+  font-size: 1.02rem;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.fg input:focus { border-color: var(--gold-dk); }
+.inp-row { display: flex; gap: 6px; }
+.btn-add {
+  background: linear-gradient(135deg, #3a2000, #6a4010, #3a2000);
+  border: 1px solid var(--gold-dk);
+  border-radius: 3px;
+  color: var(--gold-lt);
+  padding: 9px 22px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  font-family: 'Cinzel', serif;
+  align-self: flex-end;
+  height: 37px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-add:hover { border-color: var(--gold); box-shadow: 0 0 16px #c9a84c33; }
+.btn-add:disabled { opacity: 0.5; cursor: not-allowed; }
+.status { font-size: 1.0rem; margin-top: 6px; min-height: 16px; }
+.status.ok { color: var(--green); }
+.status.err { color: var(--red); }
+
+/* ── TABLE ───────────────────────────────── */
+.tbl-wrap { overflow-x: auto; padding: 0 20px 20px; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1.0rem;
+  min-width: 860px;
+}
+thead tr:first-child th {
+  font-family: 'Cinzel', serif;
+  font-size: 1.05rem;
+  letter-spacing: 2px;
+  padding: 8px 10px 4px;
+  border-bottom: none;
+}
+thead tr:last-child th {
+  font-size: 1.0rem;
+  padding: 6px 10px 10px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+thead tr:last-child th:hover { color: var(--gold-lt); }
+th.sort-desc::after { content: ' ▼'; font-size: 1.05rem; }
+th.sort-asc::after { content: ' ▲'; font-size: 1.05rem; }
+.th-main { color: var(--text2); text-align: left; }
+.th-atk { background: var(--atk-bg); color: #e8a050; text-align: center; }
+.th-def { background: var(--def-bg); color: var(--blue-lt); text-align: center; }
+.th-etc { color: var(--text2); text-align: center; }
+
+td {
+  padding: 13px 12px;
+  border-bottom: 1px solid #1a1228;
+  text-align: center;
+  vertical-align: middle;
+}
+td:first-child { text-align: left; }
+td.atk-cell { background: #0f0803; }
+td.def-cell { background: #080c12; }
+tr:hover td { background: #1a1228 !important; }
+
+.name-cell {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 1.02rem;
+}
+.rate-val { font-weight: 700; font-size: 1.05rem; }
+.rate-bar {
+  background: #1a1228;
+  border-radius: 2px;
+  height: 3px;
+  width: 56px;
+  margin: 3px auto 0;
+}
+.rate-fill { height: 100%; border-radius: 2px; }
+
+.rank-1 { color: var(--gold-lt); font-weight: 700; }
+.rank-2 { color: #b8b8c8; font-weight: 700; }
+.rank-3 { color: #c87a40; font-weight: 700; }
+
+.tag {
+  font-size: 1.05rem;
+  padding: 2px 7px;
+  border-radius: 2px;
+  letter-spacing: 0.5px;
+}
+.tag-수호탑 { background: #0a2018; color: #3aaa6a; border: 1px solid #1a4030; }
+.tag-성재 { background: #1a1000; color: var(--gold); border: 1px solid #3a2a00; }
+
+.total-row td {
+  background: #100a1e !important;
+  border-top: 1px solid var(--border);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.empty {
+  text-align: center;
+  color: var(--text3);
+  padding: 48px;
+  font-family: 'Cinzel', serif;
+  letter-spacing: 2px;
+  font-size: 1.05rem;
+}
+
+/* ── ACTION BTNS ─────────────────────────── */
+.btn-sm {
+  border: none;
+  border-radius: 2px;
+  padding: 3px 9px;
+  font-size: 1.05rem;
+  cursor: pointer;
+  margin-left: 3px;
+  letter-spacing: 0.5px;
+}
+.btn-edit { background: #2a1a3e; color: var(--purple-lt); border: 1px solid #4a2a5e; }
+.btn-edit:hover { border-color: var(--purple-lt); }
+.btn-del { background: #2a0808; color: var(--red); border: 1px solid #4a1010; }
+.btn-del:hover { border-color: var(--red); }
+
+/* ── EDIT MODAL ──────────────────────────── */
+#edit-modal {
+  display: none; position: fixed; inset: 0;
+  background: #00000099;
+  backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+  z-index: 888;
+}
+#edit-modal.show { display: flex; }
+.edit-box {
+  background: var(--bg2);
+  border: 1px solid var(--gold-dk);
+  border-radius: 4px;
+  padding: 28px;
+  width: 500px;
+  max-width: 96vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 0 60px #00000099;
+  position: relative;
+}
+.edit-box::before {
+  content: '';
+  position: absolute; top: -1px; left: 15%; right: 15%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.edit-box h3 {
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+  font-size: 1rem;
+}
+.edit-sec { margin-bottom: 14px; }
+.edit-sec .section-label { margin-bottom: 6px; }
+.edit-grid5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.edit-grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.edit-btns { display: flex; gap: 8px; margin-top: 20px; }
+.btn-save {
+  flex: 1;
+  background: linear-gradient(135deg, #3a2000, #6a4010, #3a2000);
+  border: 1px solid var(--gold-dk);
+  border-radius: 3px;
+  color: var(--gold-lt);
+  padding: 11px;
+  font-size: 1.0rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  letter-spacing: 1px;
+}
+.btn-save:hover { border-color: var(--gold); box-shadow: 0 0 16px #c9a84c33; }
+.btn-cancel {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text2);
+  padding: 11px;
+  font-size: 1.0rem;
+  cursor: pointer;
+}
 </style>
 </head>
 <body>
 
+<!-- LOCK -->
 <div id="lock-screen">
   <div class="lock-box">
-    <h2>⚔️ 레인가르 기사단</h2>
-    <p>작성 권한 비밀번호를 입력하세요</p>
-    <input type="password" id="pw-input" placeholder="••••••" maxlength="10" />
-    <button class="btn-unlock" onclick="unlock()">입장</button>
+    <!-- SVG emblem -->
+    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin:0 auto 14px;display:block">
+      <polygon points="28,4 52,16 52,40 28,52 4,40 4,16" stroke="#c9a84c" stroke-width="1.5" fill="#1a0a2e"/>
+      <polygon points="28,10 46,19 46,37 28,46 10,37 10,19" stroke="#8a6a28" stroke-width="0.8" fill="none"/>
+      <path d="M28 14 L28 42 M16 22 L40 34 M16 34 L40 22" stroke="#c9a84c" stroke-width="1.2" opacity="0.6"/>
+      <circle cx="28" cy="28" r="5" stroke="#c9a84c" stroke-width="1.2" fill="#0a0810"/>
+      <circle cx="28" cy="28" r="2" fill="#c9a84c"/>
+    </svg>
+    <h2>RAINGARD</h2>
+    <p>기사단 전용 시스템 — 인증 필요</p>
+    <input type="password" id="pw-input" placeholder="· · · · · ·" maxlength="10" />
+    <button class="btn-unlock" onclick="unlock()">ENTER</button>
     <div class="lock-err" id="lock-err"></div>
-    <div style="margin-top:16px;">
-      <a href="#" onclick="viewOnly()" style="color:#6b7280;font-size:0.8rem;text-decoration:underline;">비밀번호 없이 보기만 할게요</a>
-    </div>
+    <div class="lock-view" onclick="viewOnly()">열람만 할게요</div>
   </div>
 </div>
 
+<!-- EDIT MODAL -->
 <div id="edit-modal">
   <div class="edit-box">
-    <h3>✏️ 단원 수정</h3>
+    <h3>— 기록 수정 —</h3>
     <input type="hidden" id="edit-idx" />
-    <div class="edit-section">
-      <div class="fg" style="margin-bottom:10px;">
+    <div class="edit-sec">
+      <div class="fg">
         <label>닉네임</label>
         <input type="text" id="edit-name" />
       </div>
     </div>
-    <div class="edit-section">
-      <div class="section-label" style="color:#f59e0b;">⚔️ 공격</div>
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">
-        <div class="fg"><label style="color:#f59e0b;">판수</label><input type="number" id="edit-ap" min="0" /></div>
-        <div class="fg"><label style="color:#f59e0b;">승</label><input type="number" id="edit-aw" min="0" /></div>
-        <div class="fg"><label style="color:#f59e0b;">무</label><input type="number" id="edit-ad" min="0" /></div>
-        <div class="fg"><label style="color:#f59e0b;">패</label><input type="number" id="edit-al" min="0" /></div>
-        <div class="fg"><label style="color:#9ca3af;">팅/미참</label><input type="number" id="edit-at" min="0" /></div>
+    <div class="edit-sec">
+      <div class="section-label" style="color:#e8a050;">⚔ 공격</div>
+      <div class="edit-grid5">
+        <div class="fg"><label>판수</label><input type="number" id="edit-ap" min="0"/></div>
+        <div class="fg"><label>승</label><input type="number" id="edit-aw" min="0"/></div>
+        <div class="fg"><label>무</label><input type="number" id="edit-ad" min="0"/></div>
+        <div class="fg"><label>패</label><input type="number" id="edit-al" min="0"/></div>
+        <div class="fg"><label>팅/미참</label><input type="number" id="edit-at" min="0"/></div>
       </div>
     </div>
-    <div class="edit-section" style="margin-top:10px;">
-      <div class="section-label" style="color:#38bdf8;">🛡️ 방어</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
-        <div class="fg"><label style="color:#38bdf8;">판수</label><input type="number" id="edit-dp" min="0" /></div>
-        <div class="fg"><label style="color:#38bdf8;">승</label><input type="number" id="edit-dw" min="0" /></div>
-        <div class="fg"><label style="color:#38bdf8;">무</label><input type="number" id="edit-dd" min="0" /></div>
-        <div class="fg"><label style="color:#38bdf8;">패</label><input type="number" id="edit-dl" min="0" /></div>
+    <div class="edit-sec">
+      <div class="section-label" style="color:var(--blue-lt);">◈ 방어</div>
+      <div class="edit-grid4">
+        <div class="fg"><label>판수</label><input type="number" id="edit-dp" min="0"/></div>
+        <div class="fg"><label>승</label><input type="number" id="edit-dw" min="0"/></div>
+        <div class="fg"><label>무</label><input type="number" id="edit-dd" min="0"/></div>
+        <div class="fg"><label>패</label><input type="number" id="edit-dl" min="0"/></div>
       </div>
     </div>
-    <div class="fg" style="margin-top:10px;">
+    <div class="fg" style="margin-top:10px">
       <label>비고</label>
-      <input type="text" id="edit-note" placeholder="수호탑, 성재 등" />
+      <input type="text" id="edit-note" placeholder="수호탑, 성재 등"/>
     </div>
     <div class="edit-btns">
       <button class="btn-cancel" onclick="closeEdit()">취소</button>
@@ -139,49 +463,87 @@
   </div>
 </div>
 
-<h1>⚔️ 레인가르 기사단 전투기록</h1>
-<div class="subtitle">승률 = (승 + 무×0.5) ÷ 총경기수 | 1판 = 3경기</div>
-<div class="auth-badge" id="auth-badge"></div>
+<!-- HERO -->
+<div class="hero">
+  <svg class="emblem" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="40,5 74,20 74,60 40,75 6,60 6,20" stroke="#c9a84c" stroke-width="1.5" fill="#10091a"/>
+    <polygon points="40,12 67,24 67,56 40,68 13,56 13,24" stroke="#8a6a28" stroke-width="0.8" fill="none"/>
+    <polygon points="40,19 60,28 60,52 40,61 20,52 20,28" stroke="#c9a84c44" stroke-width="0.6" fill="none"/>
+    <path d="M40 16 L40 64" stroke="#c9a84c" stroke-width="1.2" opacity="0.5"/>
+    <path d="M18 30 L62 50 M18 50 L62 30" stroke="#c9a84c" stroke-width="1" opacity="0.4"/>
+    <path d="M40 20 L52 32 L40 44 L28 32 Z" stroke="#c9a84c" stroke-width="1.2" fill="#1a0a2e"/>
+    <circle cx="40" cy="32" r="4" stroke="#c9a84c" stroke-width="1" fill="#0a0810"/>
+    <circle cx="40" cy="32" r="1.5" fill="#c9a84c"/>
+    <path d="M36 48 L40 52 L44 48" stroke="#c9a84c" stroke-width="1" fill="none" opacity="0.6"/>
+  </svg>
+  <div class="guild-name">RAINGARD</div>
+  <div class="guild-sub">기사단 전투 기록부</div>
+  <div class="divider"><div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line"></div></div>
+  <div class="auth-badge" id="auth-badge"></div>
+</div>
 
-<div class="card" id="input-card" style="display:none;">
-  <h3>단원 추가</h3>
+<!-- INPUT -->
+<div class="panel" id="input-card" style="display:none">
+  <div class="panel-title">기록 등록</div>
   <div class="form-row">
-    <div class="form-section">
-      <div class="section-label">닉네임</div>
-      <div class="fg"><input type="text" id="inp-name" placeholder="닉네임" /></div>
+    <div class="form-section" style="flex:1.5;min-width:120px">
+      <div class="section-label" style="color:var(--text2)">닉네임</div>
+      <div class="fg"><input type="text" id="inp-name" placeholder="단원 닉네임"/></div>
     </div>
     <div class="form-section">
-      <div class="section-label" style="color:#f59e0b;">⚔️ 공격</div>
-      <div style="display:flex;gap:6px;">
-        <div class="fg"><label style="font-size:0.68rem;color:#f59e0b;">판수</label><input type="number" id="inp-ap" min="0" value="0" /></div>
-        <div class="fg"><label style="font-size:0.68rem;color:#f59e0b;">승</label><input type="number" id="inp-aw" min="0" value="0" /></div>
-        <div class="fg"><label style="font-size:0.68rem;color:#f59e0b;">무</label><input type="number" id="inp-ad" min="0" value="0" /></div>
-        <div class="fg"><label style="font-size:0.68rem;color:#f59e0b;">패</label><input type="number" id="inp-al" min="0" value="0" /></div>
-        <div class="fg"><label style="font-size:0.68rem;color:#9ca3af;">팅/미참</label><input type="number" id="inp-at" min="0" value="0" /></div>
+      <div class="section-label" style="color:#e8a050">⚔ 공격</div>
+      <div class="inp-row">
+        <div class="fg"><label>판수</label><input type="number" id="inp-ap" min="0" value="0"/></div>
+        <div class="fg"><label>승</label><input type="number" id="inp-aw" min="0" value="0"/></div>
+        <div class="fg"><label>무</label><input type="number" id="inp-ad" min="0" value="0"/></div>
+        <div class="fg"><label>패</label><input type="number" id="inp-al" min="0" value="0"/></div>
+        <div class="fg"><label>팅</label><input type="number" id="inp-at" min="0" value="0"/></div>
       </div>
     </div>
     <div class="form-section">
-      <div class="section-label" style="color:#38bdf8;">🛡️ 방어</div>
-      <div style="display:flex;gap:6px;">
-        <div class="fg"><label style="font-size:0.68rem;color:#38bdf8;">판수</label><input type="number" id="inp-dp" min="0" value="0" /></div>
-        <div class="fg"><label style="font-size:0.68rem;color:#38bdf8;">승</label><input type="number" id="inp-dw" min="0" value="0" /></div>
-        <div class="fg"><label style="font-size:0.68rem;color:#38bdf8;">무</label><input type="number" id="inp-dd" min="0" value="0" /></div>
-        <div class="fg"><label style="font-size:0.68rem;color:#38bdf8;">패</label><input type="number" id="inp-dl" min="0" value="0" /></div>
+      <div class="section-label" style="color:var(--blue-lt)">◈ 방어</div>
+      <div class="inp-row">
+        <div class="fg"><label>판수</label><input type="number" id="inp-dp" min="0" value="0"/></div>
+        <div class="fg"><label>승</label><input type="number" id="inp-dw" min="0" value="0"/></div>
+        <div class="fg"><label>무</label><input type="number" id="inp-dd" min="0" value="0"/></div>
+        <div class="fg"><label>패</label><input type="number" id="inp-dl" min="0" value="0"/></div>
       </div>
     </div>
-    <div class="form-section" style="max-width:100px;">
-      <div class="section-label">비고</div>
-      <div class="fg"><input type="text" id="inp-note" placeholder="수호탑 등" class="note-tag" /></div>
+    <div class="form-section" style="max-width:90px">
+      <div class="section-label" style="color:var(--text2)">비고</div>
+      <div class="fg"><input type="text" id="inp-note" placeholder="수호탑 등"/></div>
     </div>
-    <button class="btn-add" id="btn-add" onclick="addMember()">+ 추가</button>
+    <button class="btn-add" id="btn-add" onclick="addMember()">등록</button>
+  </div>
+  <!-- 이미지 OCR — 작성 권한자만 표시 -->
+  <div id="ocr-section" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+    <div class="section-label" style="color:var(--gold-dk);margin-bottom:8px">📷 이미지로 자동 입력</div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <label style="cursor:pointer">
+        <input type="file" id="ocr-file" accept="image/*" style="display:none" onchange="runOCR(this)"/>
+        <div class="btn-add" style="background:linear-gradient(135deg,#1a1030,#2a1850,#1a1030);border-color:var(--purple);color:var(--purple-lt);font-size:0.9rem;display:inline-flex;align-items:center;gap:6px">
+          이미지 업로드
+        </div>
+      </label>
+      <div id="ocr-status" style="font-size:0.88rem;color:var(--text2)"></div>
+    </div>
+    <!-- 미리보기 + 인식 결과 -->
+    <div id="ocr-preview-wrap" style="display:none;margin-top:12px">
+      <img id="ocr-preview" style="max-height:160px;border:1px solid var(--border);border-radius:3px;margin-bottom:10px"/>
+      <div id="ocr-result" style="background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:12px;font-size:0.88rem;color:var(--text2);max-height:200px;overflow-y:auto;white-space:pre-wrap;"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap" id="ocr-btn-row"></div>
+    </div>
   </div>
   <div class="status" id="status"></div>
 </div>
 
-<div class="card">
-  <div class="tbl-wrap">
-    <div id="tbl-wrap"><div class="empty">불러오는 중...</div></div>
-  </div>
+<!-- TABLE -->
+<div class="tbl-wrap">
+  <div id="tbl-wrap"><div class="empty">— 등록된 기록이 없습니다 —</div></div>
+</div>
+
+<div style="text-align:center;padding:20px 0 32px;font-size:0.72rem;color:var(--text3);letter-spacing:2px;font-family:'Cinzel',serif">
+  RAINGARD GUILD · BATTLE RECORDS · 승률 = (승 + 무×0.5) ÷ 총경기
 </div>
 
 <script>
@@ -190,28 +552,24 @@ const BIN_URL = 'https://api.jsonbin.io/v3/b';
 const BIN_NAME = 'raingard_battle';
 const PASSWORD = '794613';
 let BIN_ID = localStorage.getItem('raingard_battle_bin_id') || '';
-let members = [];
-let canWrite = false;
-let sortKey = 'atk_rate';
-let sortDir = -1;
+let members = [], canWrite = false, sortKey = 'atk_rate', sortDir = -1;
 
 function unlock() {
-  const val = document.getElementById('pw-input').value;
-  if (val === PASSWORD) {
+  if (document.getElementById('pw-input').value === PASSWORD) {
     canWrite = true;
     document.getElementById('lock-screen').style.display = 'none';
     document.getElementById('input-card').style.display = 'block';
-    document.getElementById('auth-badge').innerHTML = '✅ <span style="color:#34d399">작성 권한 있음</span>';
+    document.getElementById('ocr-section').style.display = 'block';
+    document.getElementById('auth-badge').innerHTML = '<span style="color:#3aaa6a;font-size:0.78rem;letter-spacing:2px">✦ 작성 권한 부여됨</span>';
     load();
   } else {
-    document.getElementById('lock-err').textContent = '비밀번호가 틀렸어요';
+    document.getElementById('lock-err').textContent = '인증 실패 — 비밀번호를 확인하세요';
     document.getElementById('pw-input').value = '';
   }
 }
 function viewOnly() {
-  canWrite = false;
   document.getElementById('lock-screen').style.display = 'none';
-  document.getElementById('auth-badge').innerHTML = '👁️ <span style="color:#6b7280">보기 전용</span>';
+  document.getElementById('auth-badge').innerHTML = '<span style="color:#5a4a7a;font-size:0.78rem;letter-spacing:2px">◈ 열람 전용</span>';
   load();
 }
 
@@ -222,253 +580,191 @@ async function initBin() {
     headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY, 'X-Bin-Name': BIN_NAME },
     body: JSON.stringify({ list: [] })
   });
-  const data = await res.json();
-  BIN_ID = data.metadata.id;
+  BIN_ID = (await res.json()).metadata.id;
   localStorage.setItem('raingard_battle_bin_id', BIN_ID);
 }
 async function load() {
   if (!BIN_ID) await initBin();
   try {
-    const res = await fetch(BIN_URL + '/' + BIN_ID + '/latest', { headers: { 'X-Master-Key': API_KEY } });
+    const res = await fetch(BIN_URL+'/'+BIN_ID+'/latest', { headers: { 'X-Master-Key': API_KEY } });
     const data = await res.json();
     members = (data.record && data.record.list) || [];
     render();
-  } catch(e) { document.getElementById('tbl-wrap').innerHTML = '<div class="empty">불러오기 실패</div>'; }
+  } catch(e) { document.getElementById('tbl-wrap').innerHTML = '<div class="empty">— 데이터를 불러올 수 없습니다 —</div>'; }
 }
 async function save() {
-  await fetch(BIN_URL + '/' + BIN_ID, {
+  await fetch(BIN_URL+'/'+BIN_ID, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
     body: JSON.stringify({ list: members })
   });
 }
 
-function calcRate(w, d, l) {
-  const t = w + d + l;
-  return t === 0 ? 0 : (w + d * 0.5) / t;
-}
-function fmtRate(r) { return (r * 100).toFixed(1) + '%'; }
+function calcRate(w,d,l) { const t=w+d+l; return t===0?0:(w+d*0.5)/t; }
+function fmtRate(r) { return (r*100).toFixed(1)+'%'; }
 function rateColor(r) {
-  if (r >= 0.9) return '#34d399';
-  if (r >= 0.7) return '#a78bfa';
-  if (r >= 0.5) return '#fbbf24';
-  return '#f87171';
+  if(r>=0.9) return '#3aaa6a';
+  if(r>=0.7) return '#c9a84c';
+  if(r>=0.5) return '#8a8aff';
+  return '#c44040';
 }
-
 function getVal(m) {
-  const aw = m.aw||0, ad = m.ad||0, al = m.al||0, at = m.at||0;
-  const dw = m.dw||0, dd = m.dd||0, dl = m.dl||0, dt = m.dt||0;
-  const atk_total = aw + ad + al;
-  const def_total = dw + dd + dl;
-  const atk_games = aw + ad + al + at;
-  const def_games = dw + dd + dl + dt;
-  const atk_판 = m.ap || Math.ceil(atk_games / 3);
-  const def_판 = m.dp || Math.ceil(def_games / 3);
-  const atk_rate = calcRate(aw, ad, al);
-  const def_rate = calcRate(dw, dd, dl);
-  return { aw,ad,al,at, dw,dd,dl,dt, atk_total, def_total, atk_games, def_games, atk_판, def_판, atk_rate, def_rate };
+  const aw=m.aw||0,ad=m.ad||0,al=m.al||0,at=m.at||0;
+  const dw=m.dw||0,dd=m.dd||0,dl=m.dl||0;
+  return {
+    aw,ad,al,at,dw,dd,dl,
+    atk_판: m.ap||0,
+    def_판: m.dp||0,
+    atk_rate: calcRate(aw,ad,al),
+    def_rate: calcRate(dw,dd,dl)
+  };
+}
+function rankList(arr, key) {
+  const s=[...arr].sort((a,b)=>b[key]-a[key]);
+  const r={}; s.forEach((m,i)=>r[m.origIdx]=i+1); return r;
+}
+function rankStr(r) {
+  if(r===1) return '<span class="rank-1">👑 1위</span>';
+  if(r===2) return '<span class="rank-2">🥈 2위</span>';
+  if(r===3) return '<span class="rank-3">🥉 3위</span>';
+  return '<span style="color:var(--text2)">'+r+'위</span>';
+}
+function noteTag(n) {
+  if(!n) return '';
+  if(n.includes('수호탑')) return '<span class="tag tag-수호탑">수호탑</span>';
+  if(n.includes('성재')) return '<span class="tag tag-성재">성재</span>';
+  return '<span style="font-size:0.78rem;color:var(--text2)">'+n+'</span>';
 }
 
 function sortedMembers() {
-  return [...members].map((m,i)=>({...m, origIdx:i, ...getVal(m)})).sort((a,b)=>{
-    let va = a[sortKey]??0, vb = b[sortKey]??0;
-    if(typeof va==='string') return sortDir * va.localeCompare(vb,'ko');
-    return sortDir * (va - vb);
+  return [...members].map((m,i)=>({...m,origIdx:i,...getVal(m)})).sort((a,b)=>{
+    let va=a[sortKey]??0, vb=b[sortKey]??0;
+    if(typeof va==='string') return sortDir*va.localeCompare(vb,'ko');
+    return sortDir*(va-vb);
   });
 }
 
-function rankList(arr, key) {
-  const sorted = [...arr].sort((a,b)=>b[key]-a[key]);
-  const rankMap = {};
-  sorted.forEach((m,i)=>{ rankMap[m.origIdx] = i+1; });
-  return rankMap;
-}
-
-function rankBadge(r) {
-  if(r===1) return '<span class="rank-badge rank-1">👑 1</span>';
-  if(r===2) return '<span class="rank-badge rank-2">🥈 2</span>';
-  if(r===3) return '<span class="rank-badge rank-3">🥉 3</span>';
-  return r;
-}
-
-function noteTag(note) {
-  if(!note) return '';
-  if(note.includes('수호탑')) return '<span class="tag-수호탑">수호탑</span>';
-  if(note.includes('성재')) return '<span class="tag-성재">성재</span>';
-  return '<span style="font-size:0.75rem;color:#9ca3af">'+note+'</span>';
+function th(key,label,cls) {
+  const active=sortKey===key;
+  const arr=active?(sortDir===-1?' sort-desc':' sort-asc'):'';
+  return '<th class="'+cls+arr+'" onclick="setSort(\''+key+'\')">'+label+'</th>';
 }
 
 function render() {
-  const wrap = document.getElementById('tbl-wrap');
-  if (!members.length) { wrap.innerHTML = '<div class="empty">단원을 추가해주세요</div>'; return; }
+  const wrap=document.getElementById('tbl-wrap');
+  if(!members.length){wrap.innerHTML='<div class="empty">— 등록된 기록이 없습니다 —</div>';return;}
+  const sorted=sortedMembers();
+  const ar=rankList(sorted,'atk_rate'), dr=rankList(sorted,'def_rate');
+  let tAW=0,tAD=0,tAL=0,tAT=0,tDW=0,tDD=0,tDL=0,tAP=0,tDP=0;
+  sorted.forEach(m=>{tAW+=m.aw||0;tAD+=m.ad||0;tAL+=m.al||0;tAT+=m.at||0;tDW+=m.dw||0;tDD+=m.dd||0;tDL+=m.dl||0;tAP+=m.atk_판||0;tDP+=m.def_판||0;});
+  const tAR=calcRate(tAW,tAD,tAL),tDR=calcRate(tDW,tDD,tDL);
+  const act=canWrite?'<th class="th-etc"></th>':'';
+  const acth=canWrite?'<th class="th-etc" style="border-bottom:none"></th>':'';
 
-  const sorted = sortedMembers();
-  const atkRank = rankList(sorted, 'atk_rate');
-  const defRank = rankList(sorted, 'def_rate');
-
-  let tAW=0,tAD=0,tAL=0,tAT=0,tDW=0,tDD=0,tDL=0,tDT=0;
-  sorted.forEach(m=>{tAW+=m.aw||0;tAD+=m.ad||0;tAL+=m.al||0;tAT+=m.at||0;tDW+=m.dw||0;tDD+=m.dd||0;tDL+=m.dl||0;tDT+=m.dt||0;});
-  const tAR=calcRate(tAW,tAD,tAL), tDR=calcRate(tDW,tDD,tDL);
-  const tAP=Math.ceil((tAW+tAD+tAL+tAT)/3), tDP=Math.ceil((tDW+tDD+tDL+tDT)/3);
-
-  const thSort = (key, label, cls) => {
-    const active = sortKey===key;
-    const arrow = active ? (sortDir===-1?' class="sort-desc"':' class="sort-asc"') : '';
-    return '<th'+arrow+' class="'+cls+'" onclick="setSort(\''+key+'\')" style="cursor:pointer">'+label+'</th>';
-  };
-
-  const rows = sorted.map(m => {
-    const ar = m.atk_rate, dr = m.def_rate;
-    const ac = rateColor(ar), dc = rateColor(dr);
-    const actions = canWrite
-      ? '<button class="btn-sm btn-edit" onclick="openEdit('+m.origIdx+')">수정</button><button class="btn-sm btn-del" onclick="delMember('+m.origIdx+')">삭제</button>'
-      : '';
+  const rows=sorted.map(m=>{
+    const v=m; const ac=rateColor(v.atk_rate),dc=rateColor(v.def_rate);
+    const btns=canWrite?'<button class="btn-sm btn-edit" onclick="openEdit('+m.origIdx+')">수정</button><button class="btn-sm btn-del" onclick="delMember('+m.origIdx+')">삭제</button>':'';
     return '<tr>'
-      +'<td>'+m.name+'</td>'
-      +'<td class="th-atk">'+m.atk_판+'</td>'
-      +'<td class="th-atk">'+m.aw+'</td>'
-      +'<td class="th-atk">'+m.ad+'</td>'
-      +'<td class="th-atk">'+m.al+'</td>'
-      +'<td class="th-atk" style="color:#9ca3af">'+m.at+'</td>'
-      +'<td class="th-atk"><span style="color:'+ac+';font-weight:700">'+fmtRate(ar)+'</span>'
-      +'<div class="rate-bar"><div class="rate-fill" style="width:'+Math.round(ar*100)+'%;background:'+ac+'"></div></div></td>'
-      +'<td class="th-def">'+m.def_판+'</td>'
-      +'<td class="th-def">'+m.dw+'</td>'
-      +'<td class="th-def">'+m.dd+'</td>'
-      +'<td class="th-def">'+m.dl+'</td>'
-      +'<td class="th-def"><span style="color:'+dc+';font-weight:700">'+fmtRate(dr)+'</span>'
-      +'<div class="rate-bar"><div class="rate-fill" style="width:'+Math.round(dr*100)+'%;background:'+dc+'"></div></div></td>'
-      +'<td class="th-etc">'+rankBadge(atkRank[m.origIdx])+'</td>'
-      +'<td class="th-etc">'+rankBadge(defRank[m.origIdx])+'</td>'
-      +'<td class="th-etc">'+noteTag(m.note||'')+'</td>'
-      +(canWrite?'<td>'+actions+'</td>':'')
+      +'<td class="name-cell">'+m.name+'</td>'
+      +'<td class="atk-cell">'+v.atk_판+'</td>'
+      +'<td class="atk-cell">'+v.aw+'</td>'
+      +'<td class="atk-cell">'+v.ad+'</td>'
+      +'<td class="atk-cell">'+v.al+'</td>'
+      +'<td class="atk-cell" style="color:var(--text3)">'+v.at+'</td>'
+      +'<td class="atk-cell"><span class="rate-val" style="color:'+ac+'">'+fmtRate(v.atk_rate)+'</span>'
+      +'<div class="rate-bar"><div class="rate-fill" style="width:'+Math.round(v.atk_rate*100)+'%;background:'+ac+'"></div></div></td>'
+      +'<td class="def-cell">'+v.def_판+'</td>'
+      +'<td class="def-cell">'+v.dw+'</td>'
+      +'<td class="def-cell">'+v.dd+'</td>'
+      +'<td class="def-cell">'+v.dl+'</td>'
+      +'<td class="def-cell"><span class="rate-val" style="color:'+dc+'">'+fmtRate(v.def_rate)+'</span>'
+      +'<div class="rate-bar"><div class="rate-fill" style="width:'+Math.round(v.def_rate*100)+'%;background:'+dc+'"></div></div></td>'
+      +'<td>'+rankStr(ar[m.origIdx])+'</td>'
+      +'<td>'+rankStr(dr[m.origIdx])+'</td>'
+      +'<td>'+noteTag(m.note||'')+'</td>'
+      +(canWrite?'<td>'+btns+'</td>':'')
       +'</tr>';
   }).join('');
 
-  const hdr = canWrite ? '<th class="th-etc"></th>' : '';
-  wrap.innerHTML = '<table>'
+  wrap.innerHTML='<table>'
     +'<thead><tr>'
-    +thSort('name','닉네임','th-etc')
-    +'<th class="th-atk" colspan="7" style="text-align:center;border-bottom:none">⚔️ 공격</th>'
-    +'<th class="th-def" colspan="5" style="text-align:center;border-bottom:none">🛡️ 방어</th>'
-    +'<th class="th-etc" colspan="3"></th>'+(canWrite?'<th></th>':'')
+    +'<th class="th-main" style="border-bottom:none"></th>'
+    +'<th class="th-atk" colspan="6" style="border-bottom:none">⚔ 공격</th>'
+    +'<th class="th-def" colspan="5" style="border-bottom:none">◈ 방어</th>'
+    +'<th class="th-etc" colspan="3" style="border-bottom:none"></th>'+acth
     +'</tr><tr>'
-    +thSort('name','닉네임','th-etc')
-    +thSort('atk_판','판수','th-atk')
-    +thSort('aw','승','th-atk')
-    +thSort('ad','무','th-atk')
-    +thSort('al','패','th-atk')
-    +thSort('at','팅/미참','th-atk')
-    +thSort('atk_rate','승률','th-atk')
-    +thSort('def_판','판수','th-def')
-    +thSort('dw','승','th-def')
-    +thSort('dd','무','th-def')
-    +thSort('dl','패','th-def')
-    +thSort('def_rate','승률','th-def')
-    +thSort('atk_rate','공격순위','th-etc')
-    +thSort('def_rate','방어순위','th-etc')
-    +'<th class="th-etc">비고</th>'+hdr
+    +th('name','닉네임','th-main')
+    +th('atk_판','판수','th-atk')+th('aw','승','th-atk')+th('ad','무','th-atk')+th('al','패','th-atk')+th('at','팅','th-atk')+th('atk_rate','승률','th-atk')
+    +th('def_판','판수','th-def')+th('dw','승','th-def')+th('dd','무','th-def')+th('dl','패','th-def')+th('def_rate','승률','th-def')
+    +th('atk_rate','공격순위','th-etc')+th('def_rate','방어순위','th-etc')
+    +'<th class="th-etc">비고</th>'+act
     +'</tr></thead><tbody>'+rows
     +'<tr class="total-row">'
-    +'<td>📊 합계</td>'
-    +'<td class="th-atk">'+tAP+'</td>'
-    +'<td class="th-atk">'+tAW+'</td>'
-    +'<td class="th-atk">'+tAD+'</td>'
-    +'<td class="th-atk">'+tAL+'</td>'
-    +'<td class="th-atk">'+tAT+'</td>'
-    +'<td class="th-atk"><span style="color:'+rateColor(tAR)+';font-weight:700">'+fmtRate(tAR)+'</span></td>'
-    +'<td class="th-def">'+tDP+'</td>'
-    +'<td class="th-def">'+tDW+'</td>'
-    +'<td class="th-def">'+tDD+'</td>'
-    +'<td class="th-def">'+tDL+'</td>'
-    +'<td class="th-def"><span style="color:'+rateColor(tDR)+';font-weight:700">'+fmtRate(tDR)+'</span></td>'
+    +'<td>전체 합산</td>'
+    +'<td>'+tAP+'</td><td>'+tAW+'</td><td>'+tAD+'</td><td>'+tAL+'</td><td>'+tAT+'</td>'
+    +'<td><span class="rate-val" style="color:'+rateColor(tAR)+'">'+fmtRate(tAR)+'</span></td>'
+    +'<td>'+tDP+'</td><td>'+tDW+'</td><td>'+tDD+'</td><td>'+tDL+'</td>'
+    +'<td><span class="rate-val" style="color:'+rateColor(tDR)+'">'+fmtRate(tDR)+'</span></td>'
     +'<td colspan="3"'+(canWrite?' colspan="4"':'')+'></td>'
     +'</tr></tbody></table>';
 }
 
-function setSort(key) {
-  if(sortKey===key) sortDir*=-1;
-  else { sortKey=key; sortDir=-1; }
-  render();
-}
-
-function setStatus(msg, type) {
+function setSort(key) { if(sortKey===key)sortDir*=-1; else{sortKey=key;sortDir=-1;} render(); }
+function setStatus(msg,type) {
   const el=document.getElementById('status');
   el.textContent=msg; el.className='status '+(type||'');
   if(type==='ok') setTimeout(()=>{el.textContent='';el.className='status';},2000);
 }
 
-function getInputs(prefix) {
-  return {
-    aw: parseInt(document.getElementById(prefix+'aw').value)||0,
-    ad: parseInt(document.getElementById(prefix+'ad').value)||0,
-    al: parseInt(document.getElementById(prefix+'al').value)||0,
-    at: parseInt(document.getElementById(prefix+'at').value)||0,
-    dw: parseInt(document.getElementById(prefix+'dw').value)||0,
-    dd: parseInt(document.getElementById(prefix+'dd').value)||0,
-    dl: parseInt(document.getElementById(prefix+'dl').value)||0,
-    dt: parseInt(document.getElementById(prefix+'dt').value)||0,
-  };
-}
-
 async function addMember() {
-  const name = document.getElementById('inp-name').value.trim();
+  const name=document.getElementById('inp-name').value.trim();
   if(!name){setStatus('닉네임을 입력해주세요','err');return;}
-  const note = document.getElementById('inp-note').value.trim();
-  const ap = parseInt(document.getElementById('inp-ap').value)||0;
-  const dp = parseInt(document.getElementById('inp-dp').value)||0;
-  const aw=parseInt(document.getElementById('inp-aw').value)||0;
-  const ad=parseInt(document.getElementById('inp-ad').value)||0;
-  const al=parseInt(document.getElementById('inp-al').value)||0;
-  const at=parseInt(document.getElementById('inp-at').value)||0;
-  const dw=parseInt(document.getElementById('inp-dw').value)||0;
-  const dd=parseInt(document.getElementById('inp-dd').value)||0;
-  const dl=parseInt(document.getElementById('inp-dl').value)||0;
-  const btn = document.getElementById('btn-add');
+  const m={name,
+    ap:parseInt(document.getElementById('inp-ap').value)||0,
+    aw:parseInt(document.getElementById('inp-aw').value)||0,
+    ad:parseInt(document.getElementById('inp-ad').value)||0,
+    al:parseInt(document.getElementById('inp-al').value)||0,
+    at:parseInt(document.getElementById('inp-at').value)||0,
+    dp:parseInt(document.getElementById('inp-dp').value)||0,
+    dw:parseInt(document.getElementById('inp-dw').value)||0,
+    dd:parseInt(document.getElementById('inp-dd').value)||0,
+    dl:parseInt(document.getElementById('inp-dl').value)||0,
+    note:document.getElementById('inp-note').value.trim()
+  };
+  const btn=document.getElementById('btn-add');
   btn.disabled=true; setStatus('저장 중...');
-  members.push({name, ap, aw, ad, al, at, dp, dw, dd, dl, dt:0, note});
+  members.push(m);
   try {
     await save(); render();
     ['inp-name','inp-ap','inp-aw','inp-ad','inp-al','inp-at','inp-dp','inp-dw','inp-dd','inp-dl','inp-note'].forEach(id=>{
       const el=document.getElementById(id);
-      el.value = id==='inp-name'||id==='inp-note' ? '' : 0;
+      el.value=id==='inp-name'||id==='inp-note'?'':0;
     });
     document.getElementById('inp-name').focus();
-    setStatus('추가됐어요!','ok');
-  } catch(e) { members.pop(); setStatus('저장 실패','err'); }
+    setStatus('등록됐습니다','ok');
+  } catch(e){members.pop();setStatus('저장 실패','err');}
   btn.disabled=false;
 }
-
 async function delMember(idx) {
-  if(!confirm(members[idx].name+' 삭제할까요?')) return;
+  if(!confirm(members[idx].name+' 기록을 삭제할까요?'))return;
   members.splice(idx,1);
-  try { await save(); render(); }
-  catch(e) { alert('삭제 실패'); }
+  try{await save();render();}catch(e){alert('삭제 실패');}
 }
-
 function openEdit(idx) {
-  const m = members[idx];
-  document.getElementById('edit-idx').value = idx;
-  document.getElementById('edit-name').value = m.name||'';
-  document.getElementById('edit-ap').value = m.ap||0;
-  document.getElementById('edit-aw').value = m.aw||0;
-  document.getElementById('edit-ad').value = m.ad||0;
-  document.getElementById('edit-al').value = m.al||0;
-  document.getElementById('edit-at').value = m.at||0;
-  document.getElementById('edit-dp').value = m.dp||0;
-  document.getElementById('edit-dw').value = m.dw||0;
-  document.getElementById('edit-dd').value = m.dd||0;
-  document.getElementById('edit-dl').value = m.dl||0;
-  document.getElementById('edit-note').value = m.note||'';
+  const m=members[idx];
+  ['idx','name','ap','aw','ad','al','at','dp','dw','dd','dl','note'].forEach(k=>{
+    const el=document.getElementById('edit-'+k);
+    if(el) el.value = k==='idx'?idx:(m[k]||0===m[k]?m[k]:'');
+  });
+  document.getElementById('edit-note').value=m.note||'';
   document.getElementById('edit-modal').classList.add('show');
 }
-function closeEdit() { document.getElementById('edit-modal').classList.remove('show'); }
+function closeEdit(){document.getElementById('edit-modal').classList.remove('show');}
 async function saveEdit() {
-  const idx = parseInt(document.getElementById('edit-idx').value);
-  const name = document.getElementById('edit-name').value.trim();
+  const idx=parseInt(document.getElementById('edit-idx').value);
+  const name=document.getElementById('edit-name').value.trim();
   if(!name){alert('닉네임을 입력해주세요');return;}
-  const note = document.getElementById('edit-note').value.trim();
-  members[idx] = { name,
+  members[idx]={name,
     ap:parseInt(document.getElementById('edit-ap').value)||0,
     aw:parseInt(document.getElementById('edit-aw').value)||0,
     ad:parseInt(document.getElementById('edit-ad').value)||0,
@@ -478,20 +774,141 @@ async function saveEdit() {
     dw:parseInt(document.getElementById('edit-dw').value)||0,
     dd:parseInt(document.getElementById('edit-dd').value)||0,
     dl:parseInt(document.getElementById('edit-dl').value)||0,
-    dt:0,
-    note
+    note:document.getElementById('edit-note').value.trim()
   };
-  try { await save(); render(); closeEdit(); setStatus('수정됐어요!','ok'); }
-  catch(e) { alert('저장 실패'); }
+  try{await save();render();closeEdit();setStatus('수정됐습니다','ok');}catch(e){alert('저장 실패');}
+}
+// ── OCR: 이미지 → Claude API → 자동 입력 ──
+async function runOCR(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('ocr-status');
+  const previewWrap = document.getElementById('ocr-preview-wrap');
+  const previewImg = document.getElementById('ocr-preview');
+  const resultEl = document.getElementById('ocr-result');
+  const btnRow = document.getElementById('ocr-btn-row');
+
+  // 미리보기
+  const url = URL.createObjectURL(file);
+  previewImg.src = url;
+  previewWrap.style.display = 'block';
+  resultEl.textContent = '';
+  btnRow.innerHTML = '';
+  statusEl.textContent = '이미지 분석 중...';
+  statusEl.style.color = 'var(--gold)';
+
+  // base64 변환
+  const base64 = await new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = () => rej(new Error('파일 읽기 실패'));
+    r.readAsDataURL(file);
+  });
+
+  const prompt = `이 이미지에서 기사단 전투 기록 데이터를 추출해주세요.
+각 단원의 닉네임, 공격(판수/승/무/패/팅·미참), 방어(판수/승/무/패), 비고를 찾아서
+아래 JSON 형식으로만 응답하세요. 다른 텍스트 없이 JSON만:
+
+[
+  {"name":"닉네임","ap":0,"aw":0,"ad":0,"al":0,"at":0,"dp":0,"dw":0,"dd":0,"dl":0,"note":""},
+  ...
+]
+
+팅/미참이 없으면 0, 방어 판수가 없으면 공격 판수와 같게, 비고가 없으면 빈 문자열로 해주세요.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2000,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: file.type, data: base64 } },
+            { type: 'text', text: prompt }
+          ]
+        }]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content?.[0]?.text || '';
+    resultEl.textContent = raw;
+
+    // JSON 파싱 시도
+    let parsed = [];
+    try {
+      const match = raw.match(/\[[\s\S]*\]/);
+      if (match) parsed = JSON.parse(match[0]);
+    } catch(e) {}
+
+    if (parsed.length > 0) {
+      statusEl.textContent = `✦ ${parsed.length}명 인식됨`;
+      statusEl.style.color = 'var(--green)';
+      btnRow.innerHTML = parsed.map((m, i) =>
+        `<button class="btn-add" style="font-size:0.82rem;padding:6px 14px;letter-spacing:0" onclick="applyOCR(${i})">${m.name} 적용</button>`
+      ).join('') + `<button class="btn-add" style="font-size:0.82rem;padding:6px 14px;letter-spacing:0;background:linear-gradient(135deg,#0a2010,#1a4020,#0a2010);border-color:#3aaa6a;color:#3aaa6a" onclick="applyAllOCR()">전체 등록</button>`;
+      window._ocrData = parsed;
+    } else {
+      statusEl.textContent = '인식 실패 — 이미지를 확인해주세요';
+      statusEl.style.color = 'var(--red)';
+    }
+  } catch(e) {
+    statusEl.textContent = '오류: ' + e.message;
+    statusEl.style.color = 'var(--red)';
+  }
+  input.value = '';
 }
 
-document.getElementById('edit-modal').addEventListener('click', e=>{ if(e.target===document.getElementById('edit-modal')) closeEdit(); });
-document.addEventListener('keydown', e=>{
-  if(e.key==='Enter'){
-    if(document.getElementById('lock-screen').style.display!=='none') unlock();
-    else if(!document.getElementById('edit-modal').classList.contains('show')) addMember();
+function applyOCR(idx) {
+  const m = window._ocrData?.[idx];
+  if (!m) return;
+  document.getElementById('inp-name').value = m.name || '';
+  document.getElementById('inp-ap').value = m.ap || 0;
+  document.getElementById('inp-aw').value = m.aw || 0;
+  document.getElementById('inp-ad').value = m.ad || 0;
+  document.getElementById('inp-al').value = m.al || 0;
+  document.getElementById('inp-at').value = m.at || 0;
+  document.getElementById('inp-dp').value = m.dp || 0;
+  document.getElementById('inp-dw').value = m.dw || 0;
+  document.getElementById('inp-dd').value = m.dd || 0;
+  document.getElementById('inp-dl').value = m.dl || 0;
+  document.getElementById('inp-note').value = m.note || '';
+  document.getElementById('inp-name').focus();
+}
+
+async function applyAllOCR() {
+  const data = window._ocrData;
+  if (!data || !data.length) return;
+  if (!confirm(`${data.length}명을 전체 자동 등록할까요?`)) return;
+  const statusEl = document.getElementById('ocr-status');
+  statusEl.textContent = '전체 등록 중...';
+  for (const m of data) {
+    members.push({
+      name: m.name||'', ap: m.ap||0, aw: m.aw||0, ad: m.ad||0, al: m.al||0, at: m.at||0,
+      dp: m.dp||0, dw: m.dw||0, dd: m.dd||0, dl: m.dl||0, note: m.note||''
+    });
   }
-  if(e.key==='Escape') closeEdit();
+  try {
+    await save(); render();
+    statusEl.textContent = `✦ ${data.length}명 등록 완료`;
+    statusEl.style.color = 'var(--green)';
+    document.getElementById('ocr-preview-wrap').style.display = 'none';
+  } catch(e) {
+    members.splice(-data.length);
+    statusEl.textContent = '저장 실패';
+    statusEl.style.color = 'var(--red)';
+  }
+}
+
+document.getElementById('edit-modal').addEventListener('click',e=>{if(e.target===document.getElementById('edit-modal'))closeEdit();});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    if(document.getElementById('lock-screen').style.display!=='none')unlock();
+    else if(!document.getElementById('edit-modal').classList.contains('show'))addMember();
+  }
+  if(e.key==='Escape')closeEdit();
 });
 </script>
 </body>
