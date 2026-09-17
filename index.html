@@ -901,22 +901,21 @@ async function exportImage() {
   ctx.strokeStyle = '#2a1f3d'; ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(PAD, TOP_H-10); ctx.lineTo(W-PAD, TOP_H-10); ctx.stroke();
 
-  // 컬럼 정의
+  // 컬럼 정의 (이미지용 - 간략)
   const cols = [
-    {label:'닉네임', w:180, align:'left', key:'name'},
-    {label:'공격 판수', w:70, align:'center', key:'atk_판'},
-    {label:'공격 승', w:55, align:'center', key:'aw', atk:true},
-    {label:'공격 무', w:55, align:'center', key:'ad', atk:true},
-    {label:'공격 패', w:55, align:'center', key:'al', atk:true},
-    {label:'팅', w:45, align:'center', key:'at', atk:true},
+    {label:'닉네임', w:160, align:'left', key:'name'},
+    {label:'공격 판수', w:75, align:'center', key:'atk_판', atk:true},
+    {label:'승', w:55, align:'center', key:'aw', atk:true},
+    {label:'무', w:55, align:'center', key:'ad', atk:true},
+    {label:'패', w:55, align:'center', key:'al', atk:true},
     {label:'공격 승률', w:90, align:'center', key:'atk_rate', atk:true},
-    {label:'방어 판수', w:70, align:'center', key:'def_판'},
-    {label:'방어 승', w:55, align:'center', key:'dw', def:true},
-    {label:'방어 무', w:55, align:'center', key:'dd', def:true},
-    {label:'방어 패', w:55, align:'center', key:'dl', def:true},
+    {label:'방어 판수', w:75, align:'center', key:'def_판', def:true},
+    {label:'승', w:55, align:'center', key:'dw', def:true},
+    {label:'무', w:55, align:'center', key:'dd', def:true},
+    {label:'패', w:55, align:'center', key:'dl', def:true},
     {label:'방어 승률', w:90, align:'center', key:'def_rate', def:true},
-    {label:'공격순위', w:70, align:'center', key:'_ar'},
-    {label:'방어순위', w:70, align:'center', key:'_dr'},
+    {label:'공격순위', w:75, align:'center', key:'_ar'},
+    {label:'방어순위', w:75, align:'center', key:'_dr'},
   ];
   let totalW = cols.reduce((s,c)=>s+c.w,0);
   let scaleX = (W-PAD*2)/totalW;
