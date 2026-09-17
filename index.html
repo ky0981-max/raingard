@@ -640,7 +640,7 @@ async function initBin() {
   if (BIN_ID) return BIN_ID;
   const res = await fetch(BIN_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY, 'X-Bin-Name': 'raingard_'+currentSeason.replace(/\s/g,'_') },
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY, 'X-Bin-Name': 'raingard_s'+seasons.indexOf(currentSeason) },
     body: JSON.stringify({ list: [] })
   });
   BIN_ID = (await res.json()).metadata.id;
